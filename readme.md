@@ -1,4 +1,4 @@
-##Regex View Engine
+## Regex View Engine
 
 This view engine avoids throwing errors on undefined values.
 The engine instead, simply hides undefined (or falsy) values.
@@ -15,7 +15,7 @@ You can add variables and use if and each statements.
 You can also import other views into the current view.
 You can choose any html tag name, and have it automatically moved to a different location.
 
-###Setup
+### Setup
 
 ```js
 // express
@@ -47,13 +47,13 @@ html = regve.render(html, {name: 'World'});
 console.log(html);
 ```
 
-###You can also define a template you want to use
+### You can also define a template you want to use
 
 ```js
 regve({template: 'layout'});
 ```
 
-###Other options you might need if Not using express
+### Other options you might need if Not using express
 
 ```js
 // if your Not using express, you can still define the the views path and file type in another way
@@ -64,7 +64,7 @@ regve({
 });
 ```
 
-###Usage
+### Usage
 
 ```js
 // to disable everything, and send raw html, just set the raw option to true
@@ -195,7 +195,7 @@ __underlined__
 ~~strike through~~
 ```
 
-###How to extract/move tags
+### How to extract/move tags
 
 ```js
 //you can add any tag name. custom tags also work
@@ -215,7 +215,7 @@ some other text
 <script src="script.js"></script>
 ```
 
-###Cache views into memory
+### Cache views into memory
 
 ```js
 // this can help reduce the number of calls to fs.reaFile()
@@ -234,7 +234,7 @@ app.engine('html', regve({cache: '1D'})); // 1 Day
 app.engine('html', regve({cache: '2m', cacheDev: true})); // 2 minutes (also runs in development)
 ```
 
-###Other options
+### Other options
 
 ```js
 // to increase performance, you can globally skip some of the unused parts of the view engine
@@ -249,7 +249,7 @@ app.engine('regve', regve({
 app.engine('html', regve({keepInvalidVars: true}));
 ```
 
-###Creating your own template functions
+### Creating your own template functions
 
 ```js
 let hasContent = true || false; // default = false
@@ -270,7 +270,7 @@ regve.addFunction('name', function(attrs, content, options){
 }, hasContent);
 ```
 
-###Defining single type html elements
+### Defining single type html elements
 
 ```js
 // this module automatically closes any open tags, but it defines the tags that should not close
@@ -281,7 +281,7 @@ regve.defineSingleTagType('img');
 regve.defineSingleTagType('br');
 ```
 
-###Lazy Loading Pages
+### Lazy Loading Pages
 
 ```js
 // lazy loading a page as the user scrolls down, is one of the more advanced options this view engine has to offer
@@ -332,7 +332,7 @@ app.get(function(req, res){
 // data parameter is required for the method that ajax requests to, so it can get the next piece of the page
 ```
 
-####inside the template, and the tag you choose, use {{#lazyload}} to separate lazy loaded instances
+#### inside the template, and the tag you choose, use {{#lazyload}} to separate lazy loaded instances
 
 ```html
 <!-- recommended, but Not dependent (optional) -->
@@ -369,7 +369,7 @@ app.get(function(req, res){
 </body>
 ```
 
-###Lazy Load Event Listener
+### Lazy Load Event Listener
 
 ```js
 // client side javascript, there is a custom event listener you can use
@@ -380,7 +380,7 @@ document.addEventListener('onPageLazyLoad', function(e){
 });
 ```
 
-###Auto Ad Insert
+### Auto Ad Insert
 
 ```js
 // you can easily and automatically place your ads into your website
