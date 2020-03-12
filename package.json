@@ -1,0 +1,26 @@
+{
+  "name": "regve",
+  "version": "0.7.1",
+  "description": "A fast view engine that runs on regex, and does Not throw an error on every undefined value.",
+  "main": "index.js",
+  "author": "AspieSoft",
+  "repository": {
+    "url": "git://github.com/aspiesoft/regve"
+  },
+  "license": "MIT",
+  "keywords": [
+    "view engine",
+    "regex",
+    "simple",
+    "light",
+    "fast",
+    "express",
+    "regular expression",
+    "markdown",
+    "lazy load"
+  ],
+  "dependencies": {
+    "lzutf8": "^0.5.5",
+    "safe-regex": "^2.1.1"
+  }
+}
