@@ -1,13 +1,14 @@
 {
   "name": "regve",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "A fast view engine that runs on regex.",
-  "main": "index.js",
+  "license": "MIT",
   "author": "AspieSoft",
   "repository": {
+    "type": "git",
     "url": "git://github.com/aspiesoft/regve"
   },
-  "license": "MIT",
+  "main": "index.js",
   "keywords": [
     "view engine",
     "regex",
