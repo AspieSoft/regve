@@ -28,8 +28,8 @@ const tagFunctions = {
             let result = '';
             forEach(val, (val, i) => {
                 if(!setVal && !setIndex){result += content;}
-                result += content.replace(/({{{?)([\w_\-.:\[\]]*?)(=)?(?:"?\s*?(\w(?:[\w_\-.:\[\]]+))\s*?"?)(}}}?)/g, (str, open, attr, isAttr, tag, close) => {
-                    tag = tag.replace(/[^\w_\-.:\[\]]/g, '').replace(/[.:\[\]]/g, '.').replace(/\.\./g, '.');
+                result += content.replace(/({{{?)([\w_\-.:\[\]|]*?)(=)?(?:"?\s*?(\w(?:[\w_\-.:\[\]|]+))\s*?"?)(}}}?)/g, (str, open, attr, isAttr, tag, close) => {
+                    tag = tag.replace(/[^\w_\-.:\[\]|]/g, '').replace(/[.:\[\]]/g, '.').replace(/\.\./g, '.');
                     if(tag.endsWith('.')){tag = tag.substring(0, tag.lastIndexOf('.'));}
                     let tagStart = tag;
                     if(tagStart.includes('.')){tagStart = tagStart.substring(0, tag.indexOf('.'));}
@@ -314,10 +314,10 @@ function replaceAllTags(str, options){
 
         if(tag.match(/^(?:[#\/](?:delete|lazy[_-]?load|no[_-]?markdown))/i) || tag.match(/^(?:-(\w(?:[\w_\-]+)))/)){return str;}
 
-        if(tag.match(/^(?:else(\s+?\w(?:[\w_\-.:\[\]]+))?)/) && container.find(item => item.tag === 'if' || item.tag === 'unless')){
-            tag = tag.replace(/^(?:else((?:\s+?\w[\w_\-.:\[\]]+)|))/, '$1');
+        if(tag.match(/^(?:else(\s+?\w(?:[\w_\-.:\[\]| "']+))?)/) && container.find(item => item.tag === 'if' || item.tag === 'unless')){
+            tag = tag.replace(/^(?:else((?:\s+?\w[\w_\-.:\[\]| "']+)|))/, '$1');
             if(!tag || tag.trim() === ''){tag = false;}
-            else{tag = tag.toString().split(/([&|])/g).map(tag => tag.toString().trim());}
+            else{tag = tag.toString().split(/([& ])/g).map(tag => tag.toString().trim());}
             let item = false; let index = 0;
             for(let i = container.length-1; i >= 0; i--){
                 if(container[i].tag === 'if' || container[i].tag === 'unless'){
@@ -336,12 +336,17 @@ function replaceAllTags(str, options){
                 }else{
                     function setVal(val){if(item.tag === 'unless'){isTrue = !val;}isTrue = !!val;}
                     for(let i = 0; i < tag.length; i++){
-                        if(isTrue && tag[i] === '|'){
-                            break;
-                        }else if(!isTrue && tag[i] === '&'){
-                            break;
-                        }else if(tag[i] !== '&' && tag[i] !== '|'){
-                            setVal(getObj(options, tag[i]));
+                        tag[i] = tag[i].trim();
+                        if(tag[i] !== ''){
+                            if(isTrue && tag[i] === '|'){
+                                break;
+                            }else if(!isTrue && tag[i] === '&'){
+                                break;
+                            }else if(tag[i] !== '&' && tag[i] !== '|'){
+                                if(tag[i].startsWith('!')){
+                                    setVal(!getObj(options, tag[i].replace('!', '')));
+                                }else{setVal(getObj(options, tag[i]));}
+                            }
                         }
                     }
                 }
@@ -366,36 +371,48 @@ function replaceAllTags(str, options){
             return false;
         }
 
-        if(tag.match(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?"?\s*?(\w(?:[\w_\-.:\[\]]+))\s*?"?)/)){
+        if(tag.match(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?"?\s*?(\w(?:[\w_\-.:\[\]| "']+))\s*?"?)/)){
             // var (with attr)
-            tag = tag.split(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?"?\s*?(\w(?:[\w_\-.:\[\]]+))\s*?"?)/).filter(filterExists);
+            tag = tag.split(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?("?\w(?:[\w_\-.:\[\]| "']+))\s*?)/).filter(filterExists);
+            if(tag[1].match(/^(["'])(.*?)(\1)/)){tag[1] = tag[1].replace(/^(["'])(.*?)(\1)/, '$2');}
             if(hasAttrTag(tag[1])){return str;}
             return result(tag[0]+'="'+getObj(options, tag[1])+'"');
-        }else if(tag.match(/^(?:=\s*?"?\s*?(\w(?:[\w_\-.:\[\]]+))\s*?"?)/)){
+        }else if(tag.match(/^(?:=\s*?"?\s*?(\w(?:[\w_\-.:\[\]| "']+))\s*?"?)/)){
             // var (with self attr)
-            tag = tag.split(/^(?:=\s*?"?\s*?(\w(?:[\w_\-.:\[\]]+))\s*?"?)/).filter(filterExists);
+            tag = tag.split(/^(?:=\s*?("?\w(?:[\w_\-.:\[\]| "']+))\s*?)/).filter(filterExists);
+            if(tag[0].match(/^(["'])(.*?)(\1)/)){tag[0] = tag[0].replace(/^(["'])(.*?)(\1)/, '$2');}
+            let attrTag = tag[0].split('|', 1)[0].trim();
             if(hasAttrTag(tag[0])){return str;}
-            return result(tag[0]+'="'+getObj(options, tag[0])+'"');
-        }else if(tag.match(/^(?:"?\s*?(\w(?:[\w_\-.:\[\]]+))\s*?"?)/)){
+            return result(attrTag+'="'+getObj(options, tag[0])+'"');
+        }else if(tag.match(/^(?:"?\s*?(\w(?:[\w_\-.:\[\]| "']+))\s*?"?)/)){
             // var (basic)
-            tag = tag.split(/^(?:"?\s*?(\w(?:[\w_\-.:\[\]]+))\s*?"?)/).filter(filterExists);
+            let hasQuotes = false;
+            if(tag.match(/^(["'])(.*?)(\1)/)){tag = tag.replace(/^(["'])(.*?)(\1)/, '$2'); hasQuotes = true;}
+            tag = tag.split(/^(?:\s*?(\w(?:[\w_\-.:\[\]| "']+))\s*?)/).filter(filterExists);
             if(hasAttrTag(tag[0])){return str;}
-            return result(getObj(options, tag[0]));
+            let resultVal = result(getObj(options, tag[0]));
+            if(resultVal && hasQuotes){resultVal = '"'+resultVal+'"';}
+            return resultVal;
         }else if(tag.match(/^(?:#(if|unless)\s+?(.*?))/)){
             // if/unless open tag
             tag = tag.split(/^(?:#(if|unless)\s+?(.*?))/).filter(filterExists);
             let method = tag.shift();
             if(!tag[0]){return '';}
-            tag = tag[0].split(/([&|])/g);
+            tag = tag[0].split(/([& ])/g);
             let isTrue = method === 'unless';
             function setVal(val){if(method === 'unless'){isTrue = !val;}isTrue = !!val;}
             for(let i = 0; i < tag.length; i++){
-                if(isTrue && tag[i] === '|'){
-                    break;
-                }else if(!isTrue && tag[i] === '&'){
-                    break;
-                }else if(tag[i] !== '&' && tag[i] !== '|'){
-                    setVal(getObj(options, tag[i]));
+                tag[i] = tag[i].trim();
+                if(tag[i] !== ''){
+                    if(isTrue && tag[i] === '|'){
+                        break;
+                    }else if(!isTrue && tag[i] === '&'){
+                        break;
+                    }else if(tag[i] !== '&' && tag[i] !== '|'){
+                        if(tag[i].startsWith('!')){
+                            setVal(!getObj(options, tag[i].replace('!', '')));
+                        }else{setVal(getObj(options, tag[i]));}
+                    }
                 }
             }
             container.push({tag: method, attrs: false, hasResult: isTrue, inDelete: !isTrue});
@@ -936,7 +953,15 @@ function forEach(obj, callback){
 
 function getObj(obj, path){
     if(!obj || !path || (typeof obj !== 'object' && !Array.isArray(obj)) || (typeof path !== 'string' && typeof path !== 'number' && typeof path !== 'boolean')){return null;}
-    return path.toString().trim().split(/(?:\.|:|\[([^\]]+)\])/gs).filter(str => str && str.trim() !== '').reduce(function(object, property){if(property && typeof object === 'object' && typeof object[property] !== 'undefined'){return object[property];} return undefined;}, obj);
+    path = path.toString().split('|');
+    for(let i = 0; i < path.length; i++){
+        path[i] = path[i].trim();
+        if(path[i].match(/^(["'])(.*?)(\1)/)){
+            return path[i].replace(/^(["'])(.*?)(\1)/, '$2');
+        }
+        let result = path[i].split(/(?:\.|:|\[([^\]]+)\])/gs).filter(str => str && str.trim() !== '').reduce(function(object, property){if(property && typeof object === 'object' && typeof object[property] !== 'undefined'){return object[property];} return undefined;}, obj);
+        if(result){return result;}
+    }return undefined;
 }
 
 function toNumber(str){

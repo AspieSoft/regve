@@ -103,13 +103,14 @@ app.set('view engine', 'html');
     <title>default title</title>
 {{/if}}
 
-{{#unless content}}
+<!-- unless statements depreciated, use the '!' (not) operator instead -->
+{{#if !content}}
     no content
 {{else}}
     {{{content}}}
-{{/unless}}
+{{/if}}
 
-<!-- if/unless statements also support else if/else unless -->
+<!-- if statements also support else if -->
 {{#if title1}}
     <title>{{title1}}</title>
 {{else title2}}
@@ -118,13 +119,45 @@ app.set('view engine', 'html');
     <title>Default Title</title>
 {{/if}}
 
-<!-- if/unless statements also support &/| -->
+<!-- if statements also support '&' (and) '|' (or) operators -->
 {{#if name & url}}
     <a {{href="url"}}>{{name}}</a>
 {{else name | url}}
     <!-- unset tags are simply removed, and do Not throw an error -->
     {{name}} {{url}}
 {{/if}}
+
+<!-- you can also use the '|' operator in vars, similar to how you would in javascript -->
+{{{myContent | myBackupContent}}}
+<html {{lang="selected-lang|default-lang"}}></html>
+
+<!-- you can use the '|' operator in first level each statements as well -->
+<!-- note: you must Not include spaces in each statements -->
+{{#each items|itemsDefault as item}}
+    {{item}}
+    <br>
+{{/each}}
+
+<!-- the '|' operator is also supported in any custom function (without spaces) -->
+
+<!-- the '|' operator in if statements -->
+<!-- if you use a space, the '|' operator is handled by the if statement algorithm -->
+{{#if item1 | item2}}
+    true
+{{/if}}
+<!-- if you use no space, the '|' operator is handled by the object algorithm -->
+{{#if item1|item2}}
+    true
+{{/if}}
+
+<!-- the '&' operator is specific to if statements, and handled by the if statement whether or not there is a space -->
+
+<!-- | 'string' operator -->
+<!-- you can use quotes to set a var | a fallback to a string, similar to how it works in javascript -->
+{{test | 'default'}}
+
+<!-- if you surround a var with quotes, it will be in quotes if it exists -->
+{{"test"}}
 
 <!-- each statements -->
 <!-- in js {list: {userID1: 'username1', userID2: 'user2'}} -->
@@ -171,6 +204,13 @@ app.set('view engine', 'html');
     Do Not rely on this for html security
     The purpose of this, is so an admin can display html without running it
 {{/no-html}}
+
+<!-- delete -->
+{{#delete}}
+    This text will be removed before rendering
+    Do Not rely on this for security
+    The purpose of this, is for the engine to remove the right content from if else statements in bulk
+{{/delete}}
 
 <!-- basic markdown support -->
 #h1

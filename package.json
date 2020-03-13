@@ -1,7 +1,7 @@
 {
   "name": "regve",
-  "version": "0.7.1",
-  "description": "A fast view engine that runs on regex, and does Not throw an error on every undefined value.",
+  "version": "0.8.1",
+  "description": "A fast view engine that runs on regex.",
   "main": "index.js",
   "author": "AspieSoft",
   "repository": {
