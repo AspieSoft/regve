@@ -1,5 +1,13 @@
 ## Regex View Engine
 
+![npm](https://img.shields.io/npm/v/regve)
+
+![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/regve)
+
+![NPM](https://img.shields.io/npm/l/regve)
+
+![npm](https://img.shields.io/npm/dw/regve)
+
 This view engine avoids throwing errors on undefined values.
 The engine instead, simply hides undefined (or falsy) values.
 
@@ -14,6 +22,12 @@ This view engine has some (optional) basic markdown like features, by using rege
 You can add variables and use if and each statements.
 You can also import other views into the current view.
 You can choose any html tag name, and have it automatically moved to a different location.
+
+### Installation
+
+```shell script
+npm install regve
+```
 
 ### Setup
 
