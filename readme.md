@@ -1,11 +1,8 @@
 ## Regex View Engine
 
 ![npm](https://img.shields.io/npm/v/regve)
-
 ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/regve)
-
 ![NPM](https://img.shields.io/npm/l/regve)
-
 ![npm](https://img.shields.io/npm/dw/regve)
 
 This view engine avoids throwing errors on undefined values.
