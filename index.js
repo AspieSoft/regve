@@ -28,8 +28,8 @@ const tagFunctions = {
             let result = '';
             forEach(val, (val, i) => {
                 if(!setVal && !setIndex){result += content;}
-                result += content.replace(/({{{?)([\w_\-.:\[\]|]*?)(=)?(?:"?\s*?(\w(?:[\w_\-.:\[\]|]+))\s*?"?)(}}}?)/g, (str, open, attr, isAttr, tag, close) => {
-                    tag = tag.replace(/[^\w_\-.:\[\]|]/g, '').replace(/[.:\[\]]/g, '.').replace(/\.\./g, '.');
+                result += content.replace(/({{{?)([\w_\-.:\[\]|]*?)(=)?(?:"?\s*?((?:\w|\$)(?:[\w_\-.:\[\]|$]+))\s*?"?)(}}}?)/g, (str, open, attr, isAttr, tag, close) => {
+                    tag = tag.replace(/[^\w_\-.:\[\]|$]/g, '').replace(/[.:\[\]]/g, '.').replace(/\.\./g, '.');
                     if(tag.endsWith('.')){tag = tag.substring(0, tag.lastIndexOf('.'));}
                     let tagStart = tag;
                     if(tagStart.includes('.')){tagStart = tagStart.substring(0, tag.indexOf('.'));}
@@ -314,10 +314,10 @@ function replaceAllTags(str, options){
 
         if(tag.match(/^(?:[#\/](?:delete|lazy[_-]?load|no[_-]?markdown))/i) || tag.match(/^(?:-(\w(?:[\w_\-]+)))/)){return str;}
 
-        if(tag.match(/^(?:else(\s+?\w(?:[\w_\-.:\[\]| "']+))?)/) && container.find(item => item.tag === 'if' || item.tag === 'unless')){
-            tag = tag.replace(/^(?:else((?:\s+?\w[\w_\-.:\[\]| "']+)|))/, '$1');
+        if(tag.match(/^(?:else(\s+?(.*?)|))/) && container.find(item => item.tag === 'if' || item.tag === 'unless')){
+            tag = tag.replace(/^(?:else(\s+?(.*?)|))/, '$1');
             if(!tag || tag.trim() === ''){tag = false;}
-            else{tag = tag.toString().split(/([& ])/g).map(tag => tag.toString().trim());}
+            else{tag = tag.toString().split(/([&|])/g).map(tag => tag.toString().trim());}
             let item = false; let index = 0;
             for(let i = container.length-1; i >= 0; i--){
                 if(container[i].tag === 'if' || container[i].tag === 'unless'){
@@ -343,13 +343,15 @@ function replaceAllTags(str, options){
                             }else if(!isTrue && tag[i] === '&'){
                                 break;
                             }else if(tag[i] !== '&' && tag[i] !== '|'){
-                                if(tag[i].startsWith('!')){
-                                    setVal(!getObj(options, tag[i].replace('!', '')));
-                                }else{setVal(getObj(options, tag[i]));}
+                                setVal(runIfStatement(tag[i], options));
                             }
                         }
                     }
                 }
+
+                //todo: remove depreciated unless tag
+                if(item.tag === 'unless'){isTrue = !isTrue}
+
                 container[index].hasResult = isTrue;
                 if(!isTrue && !item.inDelete){
                     container[index].inDelete = true;
@@ -371,24 +373,26 @@ function replaceAllTags(str, options){
             return false;
         }
 
-        if(tag.match(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?"?\s*?(\w(?:[\w_\-.:\[\]| "']+))\s*?"?)/)){
+        //todo: add ability to set $var of options._var
+
+        if(tag.match(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?"?\s*?((?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?"?)/)){
             // var (with attr)
-            tag = tag.split(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?("?\w(?:[\w_\-.:\[\]| "']+))\s*?)/).filter(filterExists);
+            tag = tag.split(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?("?(?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?)/).filter(filterExists);
             if(tag[1].match(/^(["'])(.*?)(\1)/)){tag[1] = tag[1].replace(/^(["'])(.*?)(\1)/, '$2');}
             if(hasAttrTag(tag[1])){return str;}
             return result(tag[0]+'="'+getObj(options, tag[1])+'"');
-        }else if(tag.match(/^(?:=\s*?"?\s*?(\w(?:[\w_\-.:\[\]| "']+))\s*?"?)/)){
+        }else if(tag.match(/^(?:=\s*?"?\s*?((?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?"?)/)){
             // var (with self attr)
-            tag = tag.split(/^(?:=\s*?("?\w(?:[\w_\-.:\[\]| "']+))\s*?)/).filter(filterExists);
+            tag = tag.split(/^(?:=\s*?("?(?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?)/).filter(filterExists);
             if(tag[0].match(/^(["'])(.*?)(\1)/)){tag[0] = tag[0].replace(/^(["'])(.*?)(\1)/, '$2');}
             let attrTag = tag[0].split('|', 1)[0].trim();
             if(hasAttrTag(tag[0])){return str;}
             return result(attrTag+'="'+getObj(options, tag[0])+'"');
-        }else if(tag.match(/^(?:"?\s*?(\w(?:[\w_\-.:\[\]| "']+))\s*?"?)/)){
+        }else if(tag.match(/^(?:"?\s*?((?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?"?)/)){
             // var (basic)
             let hasQuotes = false;
             if(tag.match(/^(["'])(.*?)(\1)/)){tag = tag.replace(/^(["'])(.*?)(\1)/, '$2'); hasQuotes = true;}
-            tag = tag.split(/^(?:\s*?(\w(?:[\w_\-.:\[\]| "']+))\s*?)/).filter(filterExists);
+            tag = tag.split(/^(?:\s*?((?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?)/).filter(filterExists);
             if(hasAttrTag(tag[0])){return str;}
             let resultVal = result(getObj(options, tag[0]));
             if(resultVal && hasQuotes){resultVal = '"'+resultVal+'"';}
@@ -398,9 +402,9 @@ function replaceAllTags(str, options){
             tag = tag.split(/^(?:#(if|unless)\s+?(.*?))/).filter(filterExists);
             let method = tag.shift();
             if(!tag[0]){return '';}
-            tag = tag[0].split(/([& ])/g);
+            tag = tag[0].split(/([&|])/g);
             let isTrue = method === 'unless';
-            function setVal(val){if(method === 'unless'){isTrue = !val;}isTrue = !!val;}
+            function setVal(val){if(method === 'unless'){isTrue = !val; console.warn('Regve Warning: {{#unless var}} is depreciated! Use {{#if !var}} instead.');}isTrue = !!val;}
             for(let i = 0; i < tag.length; i++){
                 tag[i] = tag[i].trim();
                 if(tag[i] !== ''){
@@ -409,12 +413,14 @@ function replaceAllTags(str, options){
                     }else if(!isTrue && tag[i] === '&'){
                         break;
                     }else if(tag[i] !== '&' && tag[i] !== '|'){
-                        if(tag[i].startsWith('!')){
-                            setVal(!getObj(options, tag[i].replace('!', '')));
-                        }else{setVal(getObj(options, tag[i]));}
+                        setVal(runIfStatement(tag[i], options));
                     }
                 }
             }
+
+            //todo: remove depreciated unless tag
+            if(method === 'unless'){isTrue = !isTrue}
+
             container.push({tag: method, attrs: false, hasResult: isTrue, inDelete: !isTrue});
             if(!isTrue){return '{{#delete}}';}
             return '';
@@ -452,6 +458,24 @@ function replaceAllTags(str, options){
 
         return '';
     });
+}
+
+function runIfStatement(val, options){
+    if(val.includes('!=')){
+        let t = val.split('!=');
+        t[0] = getObj(options, t[0].trim());
+        t[1] = getObj(options, t[1].trim());
+        return t[0] != t[1];
+    }else if(val.includes('=')){
+        let t = val.split('=');
+        t[0] = getObj(options, t[0].trim());
+        t[1] = getObj(options, t[1].trim());
+        return t[0] == t[1];
+    }else{
+        if(val.startsWith('!')){
+            return !getObj(options, val.replace('!', ''));
+        }else{return getObj(options, val);}
+    }
 }
 
 function lazyLoadScript(lazyLoad, nonceKey){
@@ -956,10 +980,14 @@ function getObj(obj, path){
     path = path.toString().split('|');
     for(let i = 0; i < path.length; i++){
         path[i] = path[i].trim();
-        if(path[i].match(/^(["'])(.*?)(\1)/)){
-            return path[i].replace(/^(["'])(.*?)(\1)/, '$2');
-        }
-        let result = path[i].split(/(?:\.|:|\[([^\]]+)\])/gs).filter(str => str && str.trim() !== '').reduce(function(object, property){if(property && typeof object === 'object' && typeof object[property] !== 'undefined'){return object[property];} return undefined;}, obj);
+        if(path[i].match(/^(["'])(.*?)(\1)/)){return path[i].replace(/^(["'])(.*?)(\1)/, '$2');}
+        path[i] = path[i].split(/(?:\.|:|\[([^\]]+)\])/gs).filter(str => str && str.trim() !== '');
+        function findVarInObj(object, property){if(property && typeof object === 'object' && typeof object[property] !== 'undefined'){return object[property];} return undefined;}
+        let result = undefined;
+        if(path[i][0].startsWith('$') && typeof obj._var === 'object'){
+            path[i][0] = path[i][0].replace('$', '');
+            result = path[i].reduce(findVarInObj, obj._var);
+        }else if(!path[i][0].startsWith('$')){result = path[i].reduce(findVarInObj, obj);}
         if(result){return result;}
     }return undefined;
 }

@@ -1,11 +1,8 @@
 ## Regex View Engine
 
 ![npm](https://img.shields.io/npm/v/regve)
-
 ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/regve)
-
 ![NPM](https://img.shields.io/npm/l/regve)
-
 ![npm](https://img.shields.io/npm/dw/regve)
 
 This view engine avoids throwing errors on undefined values.
@@ -100,6 +97,7 @@ app.set('view engine', 'html');
 <!-- {{{3}}} allows html and {{2}} escapes html -->
 {{{content}}}
 
+
 <!-- set attributes if the value exists -->
 <script src="/script.js" {{nonce=nonce_key}}></script>
 <!-- or if the attribute is named after the var -->
@@ -109,6 +107,7 @@ app.set('view engine', 'html');
 <script src="/script.js" {{="nonce"}}></script>
 <!-- for all of those, the result html will look something like this -->
 <script src="/script.js" nonce="12345"></script>
+
 
 <!-- if/unless statements -->
 {{#if title}}
@@ -154,17 +153,20 @@ app.set('view engine', 'html');
 
 <!-- the '|' operator is also supported in any custom function (without spaces) -->
 
-<!-- the '|' operator in if statements -->
-<!-- if you use a space, the '|' operator is handled by the if statement algorithm -->
-{{#if item1 | item2}}
-    true
-{{/if}}
-<!-- if you use no space, the '|' operator is handled by the object algorithm -->
-{{#if item1|item2}}
-    true
+<!-- if equal operator -->
+{{#if item = 'item1'}} <!-- if item == string -->
+    this is the first item
+{{else item = defaultItem}} <!-- if item == var -->
+    this is {{defaultItem}}
+{{else !item}}
+    there is no item
 {{/if}}
 
-<!-- the '&' operator is specific to if statements, and handled by the if statement whether or not there is a space -->
+<!-- if not equal operator -->
+{{#if item != 'item1'}} <!-- if item != string (same with var) -->
+    this is Not the first item
+{{/if}}
+
 
 <!-- | 'string' operator -->
 <!-- you can use quotes to set a var | a fallback to a string, similar to how it works in javascript -->
@@ -172,6 +174,7 @@ app.set('view engine', 'html');
 
 <!-- if you surround a var with quotes, it will be in quotes if it exists -->
 {{"test"}}
+
 
 <!-- each statements -->
 <!-- in js {list: {userID1: 'username1', userID2: 'user2'}} -->
@@ -203,9 +206,11 @@ app.set('view engine', 'html');
     </div>
 {{/each}}
 
+
 <!-- import another view -->
 <!-- must be {{{3}}} to allow html -->
 {{{#import header}}}
+
 
 <!-- disable markdown -->
 {{#no-markdown}}
@@ -226,6 +231,7 @@ app.set('view engine', 'html');
     The purpose of this, is for the engine to remove the right content from if else statements in bulk
 {{/delete}}
 
+
 <!-- basic markdown support -->
 #h1
 ##h2
@@ -236,6 +242,7 @@ app.set('view engine', 'html');
 
 --- = <hr>
 
+<!-- only runs if url is Not in "quotes" -->
 https://example.com = <a href="https://example.com">https://example.com</a>
 
 `p tag` = <p>p tag</p>
