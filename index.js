@@ -373,7 +373,7 @@ function replaceAllTags(str, options){
             return false;
         }
 
-        //todo: add ability to set $var of options._var
+        //todo: add ability to set $var of options['$']
 
         if(tag.match(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?"?\s*?((?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?"?)/)){
             // var (with attr)
@@ -461,6 +461,9 @@ function replaceAllTags(str, options){
 }
 
 function runIfStatement(val, options){
+
+    //todo: add < and > logic (also include <= and >=)
+
     if(val.includes('!=')){
         let t = val.split('!=');
         t[0] = getObj(options, t[0].trim());
@@ -984,9 +987,9 @@ function getObj(obj, path){
         path[i] = path[i].split(/(?:\.|:|\[([^\]]+)\])/gs).filter(str => str && str.trim() !== '');
         function findVarInObj(object, property){if(property && typeof object === 'object' && typeof object[property] !== 'undefined'){return object[property];} return undefined;}
         let result = undefined;
-        if(path[i][0].startsWith('$') && typeof obj._var === 'object'){
+        if(path[i][0].startsWith('$') && typeof obj['$'] === 'object'){
             path[i][0] = path[i][0].replace('$', '');
-            result = path[i].reduce(findVarInObj, obj._var);
+            result = path[i].reduce(findVarInObj, obj['$']);
         }else if(!path[i][0].startsWith('$')){result = path[i].reduce(findVarInObj, obj);}
         if(result){return result;}
     }return undefined;

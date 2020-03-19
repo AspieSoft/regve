@@ -2,8 +2,15 @@
 
 ![npm](https://img.shields.io/npm/v/regve)
 ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/regve)
+![GitHub top language](https://img.shields.io/github/languages/top/aspiesoft/regve)
 ![NPM](https://img.shields.io/npm/l/regve)
+
 ![npm](https://img.shields.io/npm/dw/regve)
+![npm](https://img.shields.io/npm/dm/regve)
+![GitHub last commit](https://img.shields.io/github/last-commit/aspiesoft/regve)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/aspiesoft/regve)
+
+[![paypal](https://img.shields.io/badge/buy%20me%20a%20coffee-paypal-blue)](http://buymeacoffee.aspiesoft.com/)
 
 This view engine avoids throwing errors on undefined values.
 The engine instead, simply hides undefined (or falsy) values.
