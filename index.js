@@ -205,15 +205,19 @@ function render(str, options){
         if(safeRegex(splitRegex)){
             str = str.split(splitRegex);
             if(str.length > 1 && options.lazyLoad.data && typeof options.lazyLoad.data === 'object' && options.lazyLoad.data.key === lazyLoadKey && options.lazyLoad.data.page > 1){
-                str[2] = str[2].split(/{{#lazy[_-]?load}}/gi, options.lazyLoad.data.page);
+                str[2] = str[2].split(/{{#lazy[_-]?load}}/gi, Number(options.lazyLoad.data.page)+1);
                 if(str[2].length !== options.lazyLoad.data.page){return '';}
-                str[2] = str[2][str[2].length-1];
+                str[2] = str[2][str[2].length-2];
+                if(!str[2][str[2].length-1] || str[2][str[2].length-1].trim() === ''){str[2] += '<no-more-lazyload-content></no-more-lazyload-content>';}
                 if(options.lazyLoad.data.contentOnly){str = [str[2]];}
             }else if(str.length > 1){
-                str[2] = str[2].split(/{{#lazy[_-]?load}}/gi, 1)[0];
-            }
+                let strParts = str[2].split(/{{#lazy[_-]?load}}/gi, 2);
+                str[2] = strParts[0];
+                if(!strParts[1] || strParts[1].trim() === ''){str[2] += '<no-more-lazyload-content></no-more-lazyload-content>';}
+            }else if(!/{{#lazy[_-]?load}}/i.test(str[2])){str[2] += '<no-more-lazyload-content></no-more-lazyload-content>';}
             str = str.join('');
-            str = str.replace(/(<\/body>)/gi, lazyLoadScript(options.lazyLoad, options.nonce)+'$1');
+            if(str.includes('</body>')){str = str.replace(/(<\/body>)/gi, lazyLoadScript(options.lazyLoad, options.nonce)+'$1');}
+            else{str += lazyLoadScript(options.lazyLoad, options.nonce);}
         }
     }
 
@@ -262,15 +266,19 @@ function render(str, options){
         if(safeRegex(splitRegex)){
             str = str.split(splitRegex);
             if(str.length > 1 && options.lazyLoad.data && typeof options.lazyLoad.data === 'object' && options.lazyLoad.data.key === lazyLoadKey && options.lazyLoad.data.page > 1){
-                str[2] = str[2].split(/{{#lazy[_-]?load}}/gi, options.lazyLoad.data.page);
+                str[2] = str[2].split(/{{#lazy[_-]?load}}/gi, Number(options.lazyLoad.data.page)+1);
                 if(str[2].length !== options.lazyLoad.data.page){return '';}
-                str[2] = str[2][str[2].length-1];
+                str[2] = str[2][str[2].length-2];
+                if(!str[2][str[2].length-1] || str[2][str[2].length-1].trim() === ''){str[2] += '<no-more-lazyload-content></no-more-lazyload-content>';}
                 if(options.lazyLoad.data.contentOnly){str = [str[2]];}
             }else if(str.length > 1){
-                str[2] = str[2].split(/{{#lazy[_-]?load}}/gi, 1)[0];
-            }
+                let strParts = str[2].split(/{{#lazy[_-]?load}}/gi, 2);
+                str[2] = strParts[0];
+                if(!strParts[1] || strParts[1].trim() === ''){str[2] += '<no-more-lazyload-content></no-more-lazyload-content>';}
+            }else if(!/{{#lazy[_-]?load}}/i.test(str[2])){str[2] += '<no-more-lazyload-content></no-more-lazyload-content>';}
             str = str.join('');
-            str = str.replace(/(<\/body>)/gi, lazyLoadScript(options.lazyLoad, options.nonce)+'$1');
+            if(str.includes('</body>')){str = str.replace(/(<\/body>)/gi, lazyLoadScript(options.lazyLoad, options.nonce)+'$1');}
+            else{str += lazyLoadScript(options.lazyLoad, options.nonce);}
         }
     }
 
@@ -506,8 +514,8 @@ function lazyLoadScript(lazyLoad, nonceKey){
         let nextPage = 2;
         let hasMorePages = true;
         let gettingPage = false;
-        let origUrl = window.location.pathname.toLowerCase().replace(/([^\w_-])?:(\\/\\/|\\\\\\\\)/gs, '').replace(/(:|\\/\\/:\\\\\\\\)/gs, '').replace(/\\\\/gs, '/');
-        if(${!lazyLoad.unsafeUrl || true}){origUrl = origUrl.replace(/[^\w_\\-+/]/g, '-');}
+        let origUrl = window.location.pathname.toLowerCase().replace(/([^\\w_-])?:(\\/\\/|\\\\\\\\)/gs, '').replace(/(:|\\/\\/:\\\\\\\\)/gs, '').replace(/\\\\/gs, '/');
+        if(${!lazyLoad.unsafeUrl || true}){origUrl = origUrl.replace(/[^\\w_\\-+/]/g, '-');}
         
         (function(){
             if(typeof window.CustomEvent === "function"){return false;}
@@ -535,9 +543,15 @@ function lazyLoadScript(lazyLoad, nonceKey){
                     let currentScrollHeight = scrollElm.scrollTop();
                     if(!gettingPage && totalScrollHeight - currentScrollHeight < 200){
                         gettingPage = true;
-                        let url = window.location.pathname.toLowerCase().replace(/([^\w_-])?:(\\/\\/|\\\\\\\\)/gs, '').replace(/(:|\\/\\/:\\\\\\\\)/gs, '').replace(/\\\\/gs, '/');
-                        if(${!lazyLoad.unsafeUrl || true}){url = url.replace(/[^\w_\\-+/]/g, '-');}
+                        let url = window.location.pathname.toLowerCase().replace(/([^\\w_-])?:(\\/\\/|\\\\\\\\)/gs, '').replace(/(:|\\/\\/:\\\\\\\\)/gs, '').replace(/\\\\/gs, '/');
+                        if(${!lazyLoad.unsafeUrl || true}){url = url.replace(/[^\\w_\\-+/]/g, '-');}
                         if(url !== origUrl){origUrl = url; nextPage = 2; hasMorePages = true;}
+                        let noMoreLazyLoadContent = document.getElementsByTagName('no-more-lazyload-content');
+                        if(noMoreLazyLoadContent.length > 0){
+                            for(let i = 0; i < noMoreLazyLoadContent.length; i++){noMoreLazyLoadContent[i].remove();}
+                            hasMorePages = false;
+                            return;
+                        }
                         let loadingElm = document.createElement('p');
                         loadingElm.classList.add('lazyload-loading');
                         loadingElm.innerText = 'Loading...';
@@ -557,15 +571,21 @@ function lazyLoadScript(lazyLoad, nonceKey){
                                 if(!data || data.toString().trim() === ''){
                                     hasMorePages = false;
                                 }else{
+                                    data = data.toString();
+                                    if(data.includes('<no-more-lazyload-content></no-more-lazyload-content>')){
+                                        hasMorePages = false;
+                                        data = data.replace(/<no-more-lazyload-content><\\/no-more-lazyload-content>/g, '');
+                                    }
                                     if(elm === window){
-                                        jQuery('body').append(data.toString());
+                                        jQuery('body').append(data);
                                     }else{elm.append(data.toString());}
                                     document.dispatchEvent(onPageLazyLoad);
                                 }
                                 gettingPage = false;
                                 if(hasMorePages && !gettingPage){getNextPage(elm, scrollElm);}
                             },
-                            error: function(){
+                            error: function(xhr){
+                                console.log(xhr.status);
                                 loadingElm.classList.add('lazyload-loading-error');
                                 loadingElm.innerHTML = 'Failed To Load!';
                                 hasMorePages = false;
@@ -595,9 +615,15 @@ function lazyLoadScript(lazyLoad, nonceKey){
                     let currentScrollHeight = scrollElm.scrollTop || window.scrollY;
                     if(!gettingPage && totalScrollHeight - currentScrollHeight < 200){
                         gettingPage = true;
-                        let url = window.location.pathname.toLowerCase().replace(/([^\w_-])?:(\\/\\/|\\\\\\\\)/gs, '').replace(/(:|\\/\\/:\\\\\\\\)/gs, '').replace(/\\\\/gs, '/');
-                        if(${!lazyLoad.unsafeUrl || true}){url = url.replace(/[^\w_\\-+/]/g, '-');}
+                        let url = window.location.pathname.toLowerCase().replace(/([^\\w_-])?:(\\/\\/|\\\\\\\\)/gs, '').replace(/(:|\\/\\/:\\\\\\\\)/gs, '').replace(/\\\\/gs, '/');
+                        if(${!lazyLoad.unsafeUrl || true}){url = url.replace(/[^\\w_\\-+/]/g, '-');}
                         if(url !== origUrl){origUrl = url; nextPage = 2; hasMorePages = true;}
+                        let noMoreLazyLoadContent = document.getElementsByTagName('no-more-lazyload-content');
+                        if(noMoreLazyLoadContent.length > 0){
+                            for(let i = 0; i < noMoreLazyLoadContent.length; i++){noMoreLazyLoadContent[i].remove();}
+                            hasMorePages = false;
+                            return;
+                        }
                         let loadingElm = document.createElement('p');
                         loadingElm.classList.add('lazyload-loading');
                         loadingElm.innerText = 'Loading...';
@@ -615,8 +641,13 @@ function lazyLoadScript(lazyLoad, nonceKey){
                                     if(!data || data.toString().trim() === ''){
                                         hasMorePages = false;
                                     }else{
+                                        data = data.toString();
+                                        if(data.includes('<no-more-lazyload-content></no-more-lazyload-content>')){
+                                            hasMorePages = false;
+                                            data = data.replace(/<no-more-lazyload-content><\\/no-more-lazyload-content>/g, '');
+                                        }
                                         let newElm = document.createElement('div');
-                                        newElm.innerHTML = data.toString();
+                                        newElm.innerHTML = data;
                                         if(elm === window){
                                             body.appendChild(newElm);
                                         }else{elm.appendChild(newElm);}
@@ -627,8 +658,12 @@ function lazyLoadScript(lazyLoad, nonceKey){
                                     currentScrollHeight = scrollElm.scrollTop || window.scrollY;
                                     if(hasMorePages && !gettingPage){getNextPage(elm, scrollElm);}
                                 }else{
-                                    loadingElm.classList.add('lazyload-loading-error');
-                                    loadingElm.innerHTML = 'Failed To Load!';
+                                    if(xhr.status == 404){
+                                        loadingElm.remove();
+                                    }else{
+                                        loadingElm.classList.add('lazyload-loading-error');
+                                        loadingElm.innerHTML = 'Failed To Load!';
+                                    }
                                     hasMorePages = false;
                                     gettingPage = false;
                                 }
@@ -651,8 +686,8 @@ function lazyLoadScript(lazyLoad, nonceKey){
                         if(hasMorePages && !gettingPage){
                             getNextPage(document.getElementsByTagName(${lazyLoad.tag})[0], window);
                         }else if(!gettingPage){
-                            let url = window.location.pathname.toLowerCase().replace(/([^\w_-])?:(\\/\\/|\\\\\\\\)/gs, '').replace(/(:|\\/\\/:\\\\\\\\)/gs, '').replace(/\\\\/gs, '/');
-                            if(${!lazyLoad.unsafeUrl || true}){url = url.replace(/[^\w_\\-+/]/g, '-');}
+                            let url = window.location.pathname.toLowerCase().replace(/([^\\w_-])?:(\\/\\/|\\\\\\\\)/gs, '').replace(/(:|\\/\\/:\\\\\\\\)/gs, '').replace(/\\\\/gs, '/');
+                            if(${!lazyLoad.unsafeUrl || true}){url = url.replace(/[^\\w_\\-+/]/g, '-');}
                             if(url !== origUrl){origUrl = url; nextPage = 2; hasMorePages = true;}
                         }
                     });
@@ -667,8 +702,8 @@ function lazyLoadScript(lazyLoad, nonceKey){
                         if(hasMorePages && !gettingPage){
                             getNextPage(document.getElementsByTagName(${lazyLoad.tag})[0], scrollElm);
                         }else if(!gettingPage){
-                            let url = window.location.pathname.toLowerCase().replace(/([^\w_-])?:(\\/\\/|\\\\\\\\)/gs, '').replace(/(:|\\/\\/:\\\\\\\\)/gs, '').replace(/\\\\/gs, '/');
-                            if(${!lazyLoad.unsafeUrl || true}){url = url.replace(/[^\w_\\-+/]/g, '-');}
+                            let url = window.location.pathname.toLowerCase().replace(/([^\\w_-])?:(\\/\\/|\\\\\\\\)/gs, '').replace(/(:|\\/\\/:\\\\\\\\)/gs, '').replace(/\\\\/gs, '/');
+                            if(${!lazyLoad.unsafeUrl || true}){url = url.replace(/[^\\w_\\-+/]/g, '-');}
                             if(url !== origUrl){origUrl = url; nextPage = 2; hasMorePages = true;}
                         }
                     });
