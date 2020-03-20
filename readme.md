@@ -391,11 +391,15 @@ app.get(function(req, res){
 });
 
 app.get(function(req, res){
-    // by default, the lazyLoad option will run before any imports or variables are added, allowing unused parts of the lazy loaded template to be removed before rendering
+    // by default, the lazyLoad option will run before any variables are added or functions are run, allowing unused parts of the lazy loaded template to be removed before rendering
     // you can disable this if needed, by setting the 'afterVars' option to true
     // setting this can be useful if you have a variable that adds the {{#lazyload}} tag dynamically
     res.render('index', {lazyLoad: {afterVars: true}});
 });
+
+// if you only have specific vars that need to load early, you can set the 'earlyVars' option
+// note: 'earlyVars' will only run on basic html var objects. This will skip attributes and escaped vars
+res.render('index', {lazyLoad: {earlyVars: ['myContent', 'myScripts', 'myStyles.mainStyle']}});
 
 // data parameter is required for the method that ajax requests to, so it can get the next piece of the page
 ```

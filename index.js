@@ -200,15 +200,50 @@ function render(str, options){
         if(layout){str = layout.replace(/{{{body}}}/g, str).replace(/{{body}}/g, escapeHtml(str));}
     }
 
+    function runNoHtmlTags(str){
+        str = str.replace(/{{{?#(no[_-]?html).*?}}}?(.*?){{{?\/(\1).*?}}}?/gsi, (str, tag, content) => {
+            if(!content || content.trim() === ''){return '';}
+            return escapeHtml(content);
+        });
+        return str;
+    }
+    str = runNoHtmlTags(str);
+
+    str = str.replace(/({{{?)#import (.*?)(}}}?)/gsi, (str, open, attr, close) => {
+        if(!attr || attr.trim() === ''){return '';}
+        attr = attr.trim();
+        let cleanHtml = !(open === '{{{' && close === '}}}');
+        function result(str){if(!str){return '';}str = str.toString();if(str && str.trim() !== ''){if(!cleanHtml){return str;}return escapeHtml(str);}return '';}
+        if(tagFunctions['import']){return runNoHtmlTags(result(tagFunctions['import'].func([attr], false, options)));}
+        return '';
+    });
+
+    if(options.lazyLoad && options.lazyLoad.earlyVars){
+        forEach(options.lazyLoad.earlyVars, earlyVar => {
+            if(!earlyVar || typeof earlyVar !== 'string' || earlyVar.trim() === ''){return;}
+            earlyVar = earlyVar.toString();
+            let regex = new RegExp('{{{\\s*?"?('+earlyVar+')"?\\s*?}}}', 'gs');
+            if(safeRegex(regex)){
+                str = str.replace(regex, (str, tag) => {
+                    if(!tag || tag.trim() === ''){return str;}
+                    let result = getObj(options, tag);
+                    if(result && result.toString().trim() !== ''){return result;}
+                    return str;
+                });
+            }
+        });
+    }
+
     if(options.lazyLoad && !options.lazyLoad.afterVars && options.lazyLoad.tag){
         let splitRegex = new RegExp('(<'+options.lazyLoad.tag.toString()+'(?:(?:\\s+?[^>]*?)|)>)(.*?)(<\\/'+options.lazyLoad.tag.toString()+'>)', 'gsi');
         if(safeRegex(splitRegex)){
             str = str.split(splitRegex);
             if(str.length > 1 && options.lazyLoad.data && typeof options.lazyLoad.data === 'object' && options.lazyLoad.data.key === lazyLoadKey && options.lazyLoad.data.page > 1){
-                str[2] = str[2].split(/{{#lazy[_-]?load}}/gi, Number(options.lazyLoad.data.page)+1);
+                let pageNum = Number(options.lazyLoad.data.page);
+                str[2] = str[2].split(/{{#lazy[_-]?load}}/gi, pageNum);
                 if(str[2].length !== options.lazyLoad.data.page){return '';}
-                str[2] = str[2][str[2].length-2];
-                if(!str[2][str[2].length-1] || str[2][str[2].length-1].trim() === ''){str[2] += '<no-more-lazyload-content></no-more-lazyload-content>';}
+                str[2] = str[2][pageNum-1];
+                if(!str[2][pageNum] || str[2][pageNum].trim() === ''){str[2] += '<no-more-lazyload-content></no-more-lazyload-content>';}
                 if(options.lazyLoad.data.contentOnly){str = [str[2]];}
             }else if(str.length > 1){
                 let strParts = str[2].split(/{{#lazy[_-]?load}}/gi, 2);
@@ -226,7 +261,7 @@ function render(str, options){
     let ranTagGroup = false;
 
     str = str.replace(/({{{?)#(\w(?:[\w_\-:])+)(.*?)(}}}?)(.*?)({{{?)\/(\2+)(}}}?)/gs, (str, open, tag, attrs, close, content) => {
-        if(!tag){return str;}
+        if(!tag || tag.trim() === ''){return str;}
         tag = tag.trim();
         if(tag.includes(':')){tag = tag.substring(0, tag.indexOf(':')).trim();}
         if(tag === 'delete'){return '';}
@@ -266,10 +301,11 @@ function render(str, options){
         if(safeRegex(splitRegex)){
             str = str.split(splitRegex);
             if(str.length > 1 && options.lazyLoad.data && typeof options.lazyLoad.data === 'object' && options.lazyLoad.data.key === lazyLoadKey && options.lazyLoad.data.page > 1){
-                str[2] = str[2].split(/{{#lazy[_-]?load}}/gi, Number(options.lazyLoad.data.page)+1);
+                let pageNum = Number(options.lazyLoad.data.page);
+                str[2] = str[2].split(/{{#lazy[_-]?load}}/gi, pageNum);
                 if(str[2].length !== options.lazyLoad.data.page){return '';}
-                str[2] = str[2][str[2].length-2];
-                if(!str[2][str[2].length-1] || str[2][str[2].length-1].trim() === ''){str[2] += '<no-more-lazyload-content></no-more-lazyload-content>';}
+                str[2] = str[2][pageNum-1];
+                if(!str[2][pageNum] || str[2][pageNum].trim() === ''){str[2] += '<no-more-lazyload-content></no-more-lazyload-content>';}
                 if(options.lazyLoad.data.contentOnly){str = [str[2]];}
             }else if(str.length > 1){
                 let strParts = str[2].split(/{{#lazy[_-]?load}}/gi, 2);
@@ -309,13 +345,13 @@ function replaceAllTags(str, options){
         if(!tag){return str;}
         tag = tag.trim();
         if(container.find(item => item.tag === 'no-html')){
-            if(tag === '/no-html'){
+            if(tag.match(/\/no[_-]?html/i)){
                 while(container[container.length-1].tag !== 'no-html' && container.length > 0){container.pop();}
                 container.pop();
                 return str;
             }
             return escapeHtml(str);
-        }else if(tag === '#no-html'){container.push({tag: 'no-html'}); return str;}
+        }else if(tag.match(/\#no[_-]?html/i)){container.push({tag: 'no-html'}); return str;}
 
         let cleanHtml = !(open === '{{{' && close === '}}}');
         function result(str){if(!str){return '';}str = str.toString();if(str && str.trim() !== ''){if(!cleanHtml){return str;}return escapeHtml(str);}return '';}
