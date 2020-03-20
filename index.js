@@ -66,7 +66,7 @@ const tagFunctions = {
             });
             return result;
         }},
-    'import': {hasContent: false, func: function(attrs, content, options){
+    'import': {hasContent: false, func: function(attrs, content, options, init = false){
             if(mainOptions && mainOptions.noImports){return;}
             if(attrs){
                 let fileType = viewsType || mainOptions.type || mainOptions.extension || 'html';
@@ -78,7 +78,8 @@ const tagFunctions = {
                     if(fs.existsSync(filePath)){try{result = fs.readFileSync(filePath);}catch(e){result = undefined;}}
                     setFileCache(filePath, result, options);
                 }
-                if(result){return replaceAllTags(autoCloseTags(result), options);}
+                if(result && !init){return replaceAllTags(autoCloseTags(result), options);}
+                if(result){return autoCloseTags(result);}
             }
         }}
 };
@@ -209,12 +210,10 @@ function render(str, options){
     }
     str = runNoHtmlTags(str);
 
-    str = str.replace(/({{{?)#import (.*?)(}}}?)/gsi, (str, open, attr, close) => {
+    str = str.replace(/({{{)#import (.*?)(}}})/gsi, (str, open, attr, close) => {
         if(!attr || attr.trim() === ''){return '';}
         attr = attr.trim();
-        let cleanHtml = !(open === '{{{' && close === '}}}');
-        function result(str){if(!str){return '';}str = str.toString();if(str && str.trim() !== ''){if(!cleanHtml){return str;}return escapeHtml(str);}return '';}
-        if(tagFunctions['import']){return runNoHtmlTags(result(tagFunctions['import'].func([attr], false, options)));}
+        if(tagFunctions['import']){return runNoHtmlTags(tagFunctions['import'].func([attr], false, options, true).toString());}
         return '';
     });
 
