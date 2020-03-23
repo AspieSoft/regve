@@ -13,7 +13,6 @@ const styleSheetRegex = /(<(?:link)(?:.*?)(?:rel="stylesheet")(?:[^>]+)?>)/gs;
 let mainOptions = {};
 let viewsPath = '';
 let viewsType = '';
-const fileCache = {};
 
 const lazyLoadKey = crypto.randomBytes(16).toString('hex');
 
@@ -99,19 +98,13 @@ function defineSingleTagType(name){
 }
 
 function getFileCache(filePath){
-    return memoryCache.get(filePath);
+    return memoryCache.get('regve_file_cache:'+filePath);
 }
 
 function setFileCache(filePath, data, options){
     if(data){data = data.toString();}
-    memoryCache.set(filePath, data, {expire: options.cache || mainOptions.cache});
+    memoryCache.set('regve_file_cache:'+filePath, data, {expire: options.cache || mainOptions.cache});
 }
-
-setInterval(function(){
-    forEach(fileCache, (file, filePath) => {
-        if((new Date().getTime()) > file.cache){delete fileCache[filePath];}
-    });
-}, toTimeMillis('10m'));
 
 function engine(filePath, options, callback){
     viewsType = filePath.substr(filePath.lastIndexOf('.'));
@@ -173,9 +166,7 @@ function render(str, options){
                     layout = autoCloseTags(layout);
                 }
                 setFileCache(template, layout, options);
-            }else{
-                setFileCache(template, null, options);
-            }
+            }else{setFileCache(template, null, options);}
         }
         str = str.replace(/{{{?body}}}?/g, '').replace(/<\/?(!DOCTYPE|html|head|body)((\s+?[^>]*?)|)>/gsi, '');
         if(options.lazyLoad && options.lazyLoad.tag){str = str.replace(new RegExp('<\\/?('+options.lazyLoad.tag.toString().replace(/[^\w_-]/g, '')+')((\\s+?[^>]*?)|)>', 'gsi'), '');}
