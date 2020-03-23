@@ -8,7 +8,6 @@
 ![npm](https://img.shields.io/npm/dw/regve)
 ![npm](https://img.shields.io/npm/dm/regve)
 ![GitHub last commit](https://img.shields.io/github/last-commit/aspiesoft/regve)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/aspiesoft/regve)
 
 [![paypal](https://img.shields.io/badge/buy%20me%20a%20coffee-paypal-blue)](http://buymeacoffee.aspiesoft.com/)
 
@@ -123,7 +122,8 @@ app.set('view engine', 'html');
     <title>default title</title>
 {{/if}}
 
-<!-- unless statements depreciated, use the '!' (not) operator instead -->
+<!-- the '!' (not) operator -->
+<!-- this is used instead of an 'unless' function -->
 {{#if !content}}
     no content
 {{else}}
@@ -161,17 +161,42 @@ app.set('view engine', 'html');
 <!-- the '|' operator is also supported in any custom function (without spaces) -->
 
 <!-- if equal operator -->
-{{#if item = 'item1'}} <!-- if item == string -->
+{{#if item = 'item1'}} <!-- if item === string -->
     this is the first item
-{{else item = defaultItem}} <!-- if item == var -->
+{{else item = defaultItem}} <!-- if item === var -->
     this is {{defaultItem}}
 {{else !item}}
     there is no item
 {{/if}}
 
 <!-- if not equal operator -->
-{{#if item != 'item1'}} <!-- if item != string (same with var) -->
+{{#if item != 'item1'}} <!-- if item !== string (same with var) -->
     this is Not the first item
+{{/if}}
+
+<!-- note: number strings will be converted to numbers when checking equality ('1' = '01' & '1' = '1.0' output: true) -->
+
+<!-- if < (or) > operators -->
+{{#if '1' < '2'}}
+    true
+{{/if}}
+
+{{#if '1' > '2'}}
+    false
+{{/if}}
+
+{{#if '1' <= '1'}}
+    true
+{{/if}}
+{{#if '1' < '1'}}
+    false
+{{/if}}
+
+{{#if '2' >= '1'}}
+    true
+{{/if}}
+{{#if '2' > '2'}}
+    false
 {{/if}}
 
 
@@ -213,6 +238,16 @@ app.set('view engine', 'html');
     </div>
 {{/each}}
 
+
+<!-- creating vars -->
+{{$myVar = 'a new var'}}
+{{$myVar2 = menu|menus.0}}
+<!-- or set in template -->
+regve.render('index', {$: {myVar: 'a new var default'});
+
+<!-- using vars -->
+{{$myVar}} <!-- output: a new var -->
+{{$myVar2}} <!-- output: menu (or) menus.0 (just like normal objects) -->
 
 <!-- import another view -->
 <!-- must be {{{3}}} to allow html -->

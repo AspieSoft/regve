@@ -357,13 +357,13 @@ function replaceAllTags(str, options){
 
         if(tag.match(/^(?:[#\/](?:delete|lazy[_-]?load|no[_-]?markdown))/i) || tag.match(/^(?:-(\w(?:[\w_\-]+)))/)){return str;}
 
-        if(tag.match(/^(?:else(\s+?(.*?)|))/) && container.find(item => item.tag === 'if' || item.tag === 'unless')){
+        if(tag.match(/^(?:else(\s+?(.*?)|))/) && container.find(item => item.tag === 'if')){
             tag = tag.replace(/^(?:else(\s+?(.*?)|))/, '$1');
             if(!tag || tag.trim() === ''){tag = false;}
             else{tag = tag.toString().split(/([&|])/g).map(tag => tag.toString().trim());}
             let item = false; let index = 0;
             for(let i = container.length-1; i >= 0; i--){
-                if(container[i].tag === 'if' || container[i].tag === 'unless'){
+                if(container[i].tag === 'if'){
                     if(container[i].lastElse === true){break;}
                     item = container[i]; index = i;
                     if(!tag){container[i].lastElse = true;}
@@ -373,11 +373,10 @@ function replaceAllTags(str, options){
             if(!item){return '';}
             if(!item.inDelete && item.hasResult){container[index].inDelete = true; return '{{#delete}}';}
             if(!item.hasResult){
-                let isTrue = item.tag === 'unless';
+                let isTrue = false;
                 if(!tag){
                     isTrue = true;
                 }else{
-                    function setVal(val){if(item.tag === 'unless'){isTrue = !val;}isTrue = !!val;}
                     for(let i = 0; i < tag.length; i++){
                         tag[i] = tag[i].trim();
                         if(tag[i] !== ''){
@@ -386,14 +385,11 @@ function replaceAllTags(str, options){
                             }else if(!isTrue && tag[i] === '&'){
                                 break;
                             }else if(tag[i] !== '&' && tag[i] !== '|'){
-                                setVal(runIfStatement(tag[i], options));
+                                isTrue = runIfStatement(tag[i], options);
                             }
                         }
                     }
                 }
-
-                //todo: remove depreciated unless tag
-                if(item.tag === 'unless'){isTrue = !isTrue}
 
                 container[index].hasResult = isTrue;
                 if(!isTrue && !item.inDelete){
@@ -416,38 +412,45 @@ function replaceAllTags(str, options){
             return false;
         }
 
-        //todo: add ability to set $var of options['$']
+        if(tag.match(/^(?:\$(\w(?:[\w_\-]+))\s*?=\s*?"?\s*?('?(?:\w|\$)[^"}]*)"?)/)){
+            // set $ var
+            let tagP = tag.split(/^(?:\$(\w(?:[\w_\-]+))\s*?=\s*?"?\s*?('?(?:\w|\$)[^"}]*)"?)/).filter(filterExists);
+            if(tagP[0] && tagP[1] && tagP[0].trim() !== '' && tagP[1].trim() !== ''){
+                if(!options['$']){options['$'] = {};}
+                options['$'][tagP[0].trim()] = getObj(options, tagP[1].trim());
+                return '';
+            }
+        }
 
-        if(tag.match(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?"?\s*?((?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?"?)/)){
+        if(tag.match(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?"?\s*?('?(?:\w|\$)[^"}]*)"?)/)){
             // var (with attr)
-            tag = tag.split(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?("?(?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?)/).filter(filterExists);
-            if(tag[1].match(/^(["'])(.*?)(\1)/)){tag[1] = tag[1].replace(/^(["'])(.*?)(\1)/, '$2');}
+            tag = tag.split(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?("?'?(?:\w|\$)[^"}]*))/).filter(filterExists);
+            if(tag[1].match(/^"(.*?)"/)){tag[1] = tag[1].replace(/^"(.*?)"/, '$1');}
             if(hasAttrTag(tag[1])){return str;}
-            return result(tag[0]+'="'+getObj(options, tag[1])+'"');
-        }else if(tag.match(/^(?:=\s*?"?\s*?((?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?"?)/)){
+            return result(tag[0].trim()+'="'+getObj(options, tag[1].trim())+'"');
+        }else if(tag.match(/^(?:=\s*?"?\s*?('?(?:\w|\$)[^"}]*)"?)/)){
             // var (with self attr)
-            tag = tag.split(/^(?:=\s*?("?(?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?)/).filter(filterExists);
-            if(tag[0].match(/^(["'])(.*?)(\1)/)){tag[0] = tag[0].replace(/^(["'])(.*?)(\1)/, '$2');}
+            tag = tag.split(/^(?:=\s*?("?'?(?:\w|\$)[^"}]*)"?)/).filter(filterExists);
+            if(tag[0].match(/^"(.*?)"/)){tag[0] = tag[0].replace(/^"(.*?)"/, '$1');}
             let attrTag = tag[0].split('|', 1)[0].trim();
             if(hasAttrTag(tag[0])){return str;}
-            return result(attrTag+'="'+getObj(options, tag[0])+'"');
-        }else if(tag.match(/^(?:"?\s*?((?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?"?)/)){
+            return result(attrTag+'="'+getObj(options, tag[0].trim())+'"');
+        }else if(tag.match(/^(?:"?\s*?('?(?:\w|\$)[^"}]*)"?)/)){
             // var (basic)
             let hasQuotes = false;
-            if(tag.match(/^(["'])(.*?)(\1)/)){tag = tag.replace(/^(["'])(.*?)(\1)/, '$2'); hasQuotes = true;}
-            tag = tag.split(/^(?:\s*?((?:\w|\$)(?:[\w_\-.:\[\]| "'$]+))\s*?)/).filter(filterExists);
+            if(tag.match(/^"(.*?)"/)){tag = tag.replace(/^"(.*?)"/, '$1'); hasQuotes = true;}
+            tag = tag.split(/^(?:\s*?('?(?:\w|\$)[^"}]*))/).filter(filterExists);
             if(hasAttrTag(tag[0])){return str;}
             let resultVal = result(getObj(options, tag[0]));
             if(resultVal && hasQuotes){resultVal = '"'+resultVal+'"';}
             return resultVal;
-        }else if(tag.match(/^(?:#(if|unless)\s+?(.*?))/)){
-            // if/unless open tag
-            tag = tag.split(/^(?:#(if|unless)\s+?(.*?))/).filter(filterExists);
+        }else if(tag.match(/^(?:#(if)\s+?(.*?))/)){
+            // if open tag
+            tag = tag.split(/^(?:#(if)\s+?(.*?))/).filter(filterExists);
             let method = tag.shift();
             if(!tag[0]){return '';}
             tag = tag[0].split(/([&|])/g);
-            let isTrue = method === 'unless';
-            function setVal(val){if(method === 'unless'){isTrue = !val; console.warn('Regve Warning: {{#unless var}} is depreciated! Use {{#if !var}} instead.');}isTrue = !!val;}
+            let isTrue = false;
             for(let i = 0; i < tag.length; i++){
                 tag[i] = tag[i].trim();
                 if(tag[i] !== ''){
@@ -456,20 +459,17 @@ function replaceAllTags(str, options){
                     }else if(!isTrue && tag[i] === '&'){
                         break;
                     }else if(tag[i] !== '&' && tag[i] !== '|'){
-                        setVal(runIfStatement(tag[i], options));
+                        isTrue = runIfStatement(tag[i], options);
                     }
                 }
             }
 
-            //todo: remove depreciated unless tag
-            if(method === 'unless'){isTrue = !isTrue}
-
             container.push({tag: method, attrs: false, hasResult: isTrue, inDelete: !isTrue});
             if(!isTrue){return '{{#delete}}';}
             return '';
-        }else if(tag.match(/^(?:\/(if|unless))/)){
-            // if/unless close tag
-            tag = tag.replace(/^(?:\/(if|unless))/, '$1');
+        }else if(tag.match(/^(?:\/(if))/)){
+            // if close tag
+            tag = tag.replace(/^(?:\/(if))/, '$1');
             if(container.find(item => item.tag === tag)){
                 while(container[container.length-1].tag !== tag && container.length > 0){container.pop();}
                 let item = container.pop();
@@ -507,20 +507,40 @@ function runIfStatement(val, options){
 
     //todo: add < and > logic (also include <= and >=)
 
-    if(val.includes('!=')){
-        let t = val.split('!=');
-        t[0] = getObj(options, t[0].trim());
-        t[1] = getObj(options, t[1].trim());
-        return t[0] != t[1];
+    function getVars(separator){
+        let t = val.split(separator);
+        if(t[0]){
+            t[0] = getObj(options, t[0].toString().trim());
+            if(t[0] && t[0].toString().match(/[0-9.]/) && !isNaN(Number(t[0]))){t[0] = Number(t[0]);}
+        }
+        if(t[1]){
+            t[1] = getObj(options, t[1].toString().trim());
+            if(t[1] && t[1].toString().match(/[0-9.]/) && !isNaN(Number(t[1]))){t[1] = Number(t[1]);}
+        }return [t[0], t[1]];
+    }
+
+    if(val.includes('<=')){
+        let t = getVars('<=');
+        return t[0] <= t[1];
+    }else if(val.includes('>=')){
+        let t = getVars('>=');
+        return t[0] >= t[1];
+    }else if(val.includes('<')){
+        let t = getVars('<');
+        return t[0] < t[1];
+    }else if(val.includes('>')){
+        let t = getVars('>');
+        return t[0] > t[1];
+    }else if(val.includes('!=')){
+        let t = getVars('!=');
+        return t[0] !== t[1];
     }else if(val.includes('=')){
-        let t = val.split('=');
-        t[0] = getObj(options, t[0].trim());
-        t[1] = getObj(options, t[1].trim());
-        return t[0] == t[1];
+        let t = getVars('=');
+        return t[0] === t[1];
     }else{
         if(val.startsWith('!')){
             return !getObj(options, val.replace('!', ''));
-        }else{return getObj(options, val);}
+        }else{return !!getObj(options, val);}
     }
 }
 
