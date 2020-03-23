@@ -405,13 +405,13 @@ function replaceAllTags(str, options){
 
         if(tag.match(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?"?\s*?('?(?:\w|\$)[^"}]*)"?)/)){
             // var (with attr)
-            tag = tag.split(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?("?'?(?:\w|\$)[^"}]*))/).filter(filterExists);
+            tag = tag.split(/^(?:(\w(?:[\w_\-]+))\s*?=\s*?"?\s*?('?(?:\w|\$)[^"}]*))/).filter(filterExists);
             if(tag[1].match(/^"(.*?)"/)){tag[1] = tag[1].replace(/^"(.*?)"/, '$1');}
             if(hasAttrTag(tag[1])){return str;}
             return result(tag[0].trim()+'="'+getObj(options, tag[1].trim())+'"');
         }else if(tag.match(/^(?:=\s*?"?\s*?('?(?:\w|\$)[^"}]*)"?)/)){
             // var (with self attr)
-            tag = tag.split(/^(?:=\s*?("?'?(?:\w|\$)[^"}]*)"?)/).filter(filterExists);
+            tag = tag.split(/^(?:=\s*?"?\s*?('?(?:\w|\$)[^"}]*)"?)/).filter(filterExists);
             if(tag[0].match(/^"(.*?)"/)){tag[0] = tag[0].replace(/^"(.*?)"/, '$1');}
             let attrTag = tag[0].split('|', 1)[0].trim();
             if(hasAttrTag(tag[0])){return str;}
@@ -420,7 +420,7 @@ function replaceAllTags(str, options){
             // var (basic)
             let hasQuotes = false;
             if(tag.match(/^"(.*?)"/)){tag = tag.replace(/^"(.*?)"/, '$1'); hasQuotes = true;}
-            tag = tag.split(/^(?:\s*?('?(?:\w|\$)[^"}]*))/).filter(filterExists);
+            tag = tag.split(/^(?:\s*?"?\s*?('?(?:\w|\$)[^"}]*))/).filter(filterExists);
             if(hasAttrTag(tag[0])){return str;}
             let resultVal = result(getObj(options, tag[0]));
             if(resultVal && hasQuotes){resultVal = '"'+resultVal+'"';}
