@@ -1,6 +1,4 @@
-.idea
-node_modules
+.idea/
+node_modules/
+test/
 app.js
-example.html
-template.html
-header.html

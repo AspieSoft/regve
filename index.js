@@ -4,13 +4,13 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const safeRegex = require('safe-regex');
-const LZUTF8 = require('lzutf8');
+const memoryCache = require('obj-memory-cache');
 
 const singleTagsList = ['meta', 'link', 'img', 'br', 'hr', 'input'];
 
 const styleSheetRegex = /(<(?:link)(?:.*?)(?:rel="stylesheet")(?:[^>]+)?>)/gs;
 
-let mainOptions = false;
+let mainOptions = {};
 let viewsPath = '';
 let viewsType = '';
 const fileCache = {};
@@ -98,32 +98,13 @@ function defineSingleTagType(name){
     return true;
 }
 
-function compressStr(str){
-    if(!str){return undefined;}
-    if(typeof str === 'object' || Array.isArray(str)){try{str = JSON.stringify(str);}catch(e){return null;}}
-    try{return LZUTF8.compress(str, {outputEncoding: 'StorageBinaryString'});}catch(e){return null;}
-}
-
-function decompressStr(str){
-    if(!str){return undefined;}
-    try{str = LZUTF8.decompress(str, {inputEncoding: 'StorageBinaryString'});}catch(e){return null;}
-    try{str = JSON.parse(str);}catch(e){}
-    return str;
-}
-
 function getFileCache(filePath){
-    if(process.env.NODE_ENV !== 'production' && (!mainOptions || !mainOptions.cacheDev)){return false;}
-    if(fileCache[filePath] && (new Date().getTime()) <= fileCache[filePath].cache){
-        return decompressStr(fileCache[filePath].file);
-    }else if(fileCache[filePath]){delete fileCache[filePath];}
-    return false;
+    return memoryCache.get(filePath);
 }
 
 function setFileCache(filePath, data, options){
-    if(!fileCache[filePath]){
-        if(data){data = data.toString();}
-        if((options && options.cache) || (mainOptions && mainOptions.cache)){fileCache[filePath] = {file: compressStr(data), cache: (new Date().getTime())+toTimeMillis(options.cache || mainOptions.cache)};}
-    }
+    if(data){data = data.toString();}
+    memoryCache.set(filePath, data, {expire: options.cache || mainOptions.cache});
 }
 
 setInterval(function(){
@@ -504,8 +485,6 @@ function replaceAllTags(str, options){
 }
 
 function runIfStatement(val, options){
-
-    //todo: add < and > logic (also include <= and >=)
 
     function getVars(separator){
         let t = val.split(separator);
@@ -1122,8 +1101,10 @@ function toTimeMillis(str){
 
 module.exports = (() => {
     let exports = function(options = false){
-        mainOptions = options;
-        return engine;
+        if(typeof options === 'object'){
+            Object.assign(mainOptions, options);
+            if(options.cacheDev || options.cacheDev === false){memoryCache.cacheDevelopment(options.cacheDev);}
+        }return engine;
     };
     exports.render = render;
     exports.addFunction = addFunction;
