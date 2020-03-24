@@ -346,12 +346,24 @@ app.engine('html', regve({cache: '2m', cacheDev: true})); // 2 minutes (also run
 // data will be returned as a buffer, so you may need to use data.toString() to modify it
 
 regve({onBeforeRender: function(data){
-    // I will run before res.render() runs
+    // this will run before res.render() runs
     return data;
 }});
 
 regve({onAfterRender: function(data){
-    // I will run after res.render() runs
+    // this will run after res.render() runs
+    return data;
+}});
+
+// you can also run these functions by setting options
+
+res.render('index', {onBeforeRender: function(data){
+    // this will run before res.render() runs
+    return data;
+}});
+
+res.render('index', {onAfterRender: function(data){
+    // this will run after res.render() runs
     return data;
 }});
 ```

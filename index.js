@@ -114,10 +114,16 @@ function engine(filePath, options, callback){
         if(mainOptions && typeof mainOptions.onBeforeRender === 'function'){
             let beforeRendered = mainOptions.onBeforeRender(Buffer.from(fileData, 'utf8'));
             if(beforeRendered && typeof beforeRendered === 'string'){fileData = beforeRendered;}
+        }else if(options && typeof options.onBeforeRender === 'function'){
+            let beforeRendered = options.onBeforeRender(Buffer.from(fileData, 'utf8'));
+            if(beforeRendered && typeof beforeRendered === 'string'){fileData = beforeRendered;}
         }
         let rendered = render(fileData, options);
         if(mainOptions && typeof mainOptions.onAfterRender === 'function'){
             let afterRendered = mainOptions.onAfterRender(Buffer.from(rendered, 'utf8'));
+            if(afterRendered && typeof afterRendered === 'string'){rendered = afterRendered;}
+        }else if(options && typeof options.onAfterRender === 'function'){
+            let afterRendered = options.onAfterRender(Buffer.from(rendered, 'utf8'));
             if(afterRendered && typeof afterRendered === 'string'){rendered = afterRendered;}
         }
         return callback(null, rendered.toString());
@@ -128,10 +134,16 @@ function engine(filePath, options, callback){
             if(mainOptions && typeof mainOptions.onBeforeRender === 'function'){
                 let beforeRendered = mainOptions.onBeforeRender(content);
                 if(beforeRendered && typeof beforeRendered === 'string'){content = beforeRendered;}
+            }else if(options && typeof options.onBeforeRender === 'function'){
+                let beforeRendered = options.onBeforeRender(content);
+                if(beforeRendered && typeof beforeRendered === 'string'){content = beforeRendered;}
             }
             let rendered = render(content, options);
             if(mainOptions && typeof mainOptions.onAfterRender === 'function'){
                 let afterRendered = mainOptions.onAfterRender(Buffer.from(rendered, 'utf8'));
+                if(afterRendered && typeof afterRendered === 'string'){rendered = afterRendered;}
+            }else if(options && typeof options.onAfterRender === 'function'){
+                let afterRendered = options.onAfterRender(Buffer.from(rendered, 'utf8'));
                 if(afterRendered && typeof afterRendered === 'string'){rendered = afterRendered;}
             }
             return callback(null, rendered.toString());
