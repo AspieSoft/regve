@@ -343,6 +343,7 @@ app.engine('html', regve({cache: '2m', cacheDev: true})); // 2 minutes (also run
 // the data is the file data before or after rendered
 // you can also return the data, with some modifications, to override the original data (must be type string)
 // returning nothing will leave the result alone
+// data will be returned as a buffer, so you may need to use data.toString() to modify it
 
 regve({onBeforeRender: function(data){
     // I will run before res.render() runs

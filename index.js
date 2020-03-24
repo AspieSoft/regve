@@ -112,21 +112,29 @@ function engine(filePath, options, callback){
     let fileData = getFileCache(filePath);
     if(fileData){
         if(mainOptions && typeof mainOptions.onBeforeRender === 'function'){
-            let beforeRendered = mainOptions.onBeforeRender(fileData);
+            let beforeRendered = mainOptions.onBeforeRender(Buffer.from(fileData, 'utf8'));
             if(beforeRendered && typeof beforeRendered === 'string'){fileData = beforeRendered;}
         }
         let rendered = render(fileData, options);
         if(mainOptions && typeof mainOptions.onAfterRender === 'function'){
-            let afterRendered = mainOptions.onAfterRender(rendered);
+            let afterRendered = mainOptions.onAfterRender(Buffer.from(rendered, 'utf8'));
             if(afterRendered && typeof afterRendered === 'string'){rendered = afterRendered;}
         }
-        return callback(null, rendered);
+        return callback(null, rendered.toString());
     }else{
         fs.readFile(filePath, function(err, content){
             if(err){return callback(err);}
             setFileCache(filePath, content, options);
+            if(mainOptions && typeof mainOptions.onBeforeRender === 'function'){
+                let beforeRendered = mainOptions.onBeforeRender(content);
+                if(beforeRendered && typeof beforeRendered === 'string'){content = beforeRendered;}
+            }
             let rendered = render(content, options);
-            return callback(null, rendered);
+            if(mainOptions && typeof mainOptions.onAfterRender === 'function'){
+                let afterRendered = mainOptions.onAfterRender(Buffer.from(rendered, 'utf8'));
+                if(afterRendered && typeof afterRendered === 'string'){rendered = afterRendered;}
+            }
+            return callback(null, rendered.toString());
         });
     }
 }
