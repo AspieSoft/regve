@@ -372,9 +372,10 @@ res.render('index', {onAfterRender: function(data){
 
 ```js
 // to increase performance, you can globally skip some of the unused parts of the view engine
+// you can also add these to res.render({/* options */});
 app.engine('regve', regve({
     noImports: true,
-    noForEach: true,
+    noEach: true,
     noMarkdown: true
 }));
 

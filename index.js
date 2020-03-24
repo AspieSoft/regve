@@ -18,7 +18,7 @@ const lazyLoadKey = crypto.randomBytes(16).toString('hex');
 
 const tagFunctions = {
     'each': {hasContent: true, func: function(attrs, content, options){
-            if(mainOptions && (mainOptions.noEach || mainOptions.noForEach)){return;}
+            if((mainOptions && (mainOptions.noEach || mainOptions.noForEach)) || options.noEach || options.noForEach){return;}
             let val = getObj(options, attrs[0]);
             if(!val){return;}
             let setVal = false; let setIndex = false;
@@ -66,7 +66,7 @@ const tagFunctions = {
             return result;
         }},
     'import': {hasContent: false, func: function(attrs, content, options, init = false){
-            if(mainOptions && mainOptions.noImports){return;}
+            if((mainOptions && mainOptions.noImports) || options.noImports){return;}
             if(attrs){
                 let fileType = viewsType || mainOptions.type || mainOptions.extension || 'html';
                 if(fileType.startsWith('.')){fileType = fileType.replace('.', '');}
@@ -162,6 +162,8 @@ function render(str, options){
     if(!str.endsWith('\n')){str += '\n\r';}
     str = autoCloseTags(str);
 
+    if(!options){options = {};}
+
     if(options.lazyLoad && typeof options.lazyLoad !== 'object'){options.lazyLoad = {method: 'post', tag: 'body', data: false};}
     if(options.lazyLoad){
         options.lazyLoad.data = options.lazyLoad.data || false;
@@ -210,12 +212,14 @@ function render(str, options){
     }
     str = runNoHtmlTags(str);
 
-    str = str.replace(/({{{)#import (.*?)(}}})/gsi, (str, open, attr, close) => {
-        if(!attr || attr.trim() === ''){return '';}
-        attr = attr.trim();
-        if(tagFunctions['import']){return runNoHtmlTags(tagFunctions['import'].func([attr], false, options, true).toString());}
-        return '';
-    });
+    if((!mainOptions || !mainOptions.noImports) && !options.noImports){
+        str = str.replace(/({{{)#import (.*?)(}}})/gsi, (str, open, attr, close) => {
+            if(!attr || attr.trim() === ''){return '';}
+            attr = attr.trim();
+            if(tagFunctions['import']){return runNoHtmlTags(tagFunctions['import'].func([attr], false, options, true).toString());}
+            return '';
+        });
+    }
 
     if(options.lazyLoad && options.lazyLoad.earlyVars){
         forEach(options.lazyLoad.earlyVars, earlyVar => {
@@ -317,7 +321,7 @@ function render(str, options){
         }
     }
 
-    if(!mainOptions || !mainOptions.noMarkdown){
+    if((!mainOptions || !mainOptions.noMarkdown) && !options.noMarkdown){
         let mdRegex = /({{{?#no[_-]?markdown}}}?(?:.*?){{{?\/no[_-]?markdown}}}?|<script(?:(?:\s+?[^>]*?)|)>(?:.*?)<\/script>|<style(?:(?:\s+?[^>]*?)|)>(?:.*?)<\/style>)/gsi;
         let mdMarkdownRegex = /{{{?#no[_-]?markdown}}}?(.*?){{{?\/no[_-]?markdown}}}?/gsi;
         str = str.split(mdRegex).map(md => {
@@ -331,7 +335,7 @@ function render(str, options){
 
     if(mainOptions && mainOptions.extract){str = extractTags(str, mainOptions.extract, false);}
 
-    if(!mainOptions || !mainOptions.keepInvalidVars){str = str.replace(/({{{?(?:(?:[^}]+)|)}}}?)/g, '');}
+    if((!mainOptions || !mainOptions.keepInvalidVars) && !options.keepInvalidVars){str = str.replace(/({{{?(?:(?:[^}]+)|)}}}?)/g, '');}
 
     str = autoCloseTags(str);
 
