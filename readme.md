@@ -337,6 +337,24 @@ app.engine('html', regve({cache: '1D'})); // 1 Day
 app.engine('html', regve({cache: '2m', cacheDev: true})); // 2 minutes (also runs in development)
 ```
 
+### run functions before and after render (express)
+```js
+// in express, you can set a callback function, just before, or just after res.render() runs
+// the data is the file data before or after rendered
+// you can also return the data, with some modifications, to override the original data (must be type string)
+// returning nothing will leave the result alone
+
+regve({onBeforeRender: function(data){
+    // I will run before res.render() runs
+    return data;
+}});
+
+regve({onAfterRender: function(data){
+    // I will run after res.render() runs
+    return data;
+}});
+```
+
 ### Other options
 
 ```js

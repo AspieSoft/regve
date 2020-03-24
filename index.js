@@ -98,12 +98,12 @@ function defineSingleTagType(name){
 }
 
 function getFileCache(filePath){
-    return memoryCache.get('regve_file_cache:'+filePath);
+    return memoryCache.get('regve:template_file_cache:'+filePath);
 }
 
 function setFileCache(filePath, data, options){
     if(data){data = data.toString();}
-    memoryCache.set('regve_file_cache:'+filePath, data, {expire: options.cache || mainOptions.cache});
+    memoryCache.set('regve:template_file_cache:'+filePath, data, {expire: options.cache || mainOptions.cache});
 }
 
 function engine(filePath, options, callback){
@@ -111,7 +111,15 @@ function engine(filePath, options, callback){
     viewsPath = path.join(filePath, '..');
     let fileData = getFileCache(filePath);
     if(fileData){
+        if(mainOptions && typeof mainOptions.onBeforeRender === 'function'){
+            let beforeRendered = mainOptions.onBeforeRender(fileData);
+            if(beforeRendered && typeof beforeRendered === 'string'){fileData = beforeRendered;}
+        }
         let rendered = render(fileData, options);
+        if(mainOptions && typeof mainOptions.onAfterRender === 'function'){
+            let afterRendered = mainOptions.onAfterRender(rendered);
+            if(afterRendered && typeof afterRendered === 'string'){rendered = afterRendered;}
+        }
         return callback(null, rendered);
     }else{
         fs.readFile(filePath, function(err, content){
@@ -1053,40 +1061,6 @@ function getObj(obj, path){
         }else if(!path[i][0].startsWith('$')){result = path[i].reduce(findVarInObj, obj);}
         if(result){return result;}
     }return undefined;
-}
-
-function toNumber(str){
-    if(typeof str === 'number'){return str;}
-    return Number(str.replace(/[^0-9.]/g, '').split('.', 2).join('.'));
-}
-
-function toTimeMillis(str){
-    if(typeof str === 'number'){return Number(str);}
-    if(!str || typeof str !== 'string' || str.trim() === ''){return NaN;}
-    if(str.endsWith('h')){
-        return toNumber(str)*3600000;
-    }else if(str.endsWith('m')){
-        return toNumber(str)*60000;
-    }else if(str.endsWith('s')){
-        return toNumber(str)*1000;
-    }else if(str.endsWith('D')){
-        return toNumber(str)*86400000;
-    }else if(str.endsWith('M')){
-        return toNumber(str)*2628000000;
-    }else if(str.endsWith('Y')){
-        return toNumber(str)*31536000000;
-    }else if(str.endsWith('DE')){
-        return toNumber(str)*315360000000;
-    }else if(str.endsWith('C') || this.endsWith('CE')){
-        return toNumber(str)*3153600000000;
-    }else if(str.endsWith('ms')){
-        return toNumber(str);
-    }else if(str.endsWith('us') || this.endsWith('mic')){
-        return toNumber(str)*0.001;
-    }else if(str.endsWith('ns')){
-        return toNumber(str)*0.000001;
-    }
-    return toNumber(str);
 }
 
 
