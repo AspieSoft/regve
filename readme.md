@@ -9,7 +9,7 @@
 ![npm](https://img.shields.io/npm/dm/regve)
 ![GitHub last commit](https://img.shields.io/github/last-commit/aspiesoft/regve)
 
-[![paypal](https://img.shields.io/badge/buy%20me%20a%20coffee-paypal-blue)](http://buymeacoffee.aspiesoft.com/)
+[![paypal](https://img.shields.io/badge/buy%20me%20a%20coffee-paypal-blue)](https://buymeacoffee.aspiesoft.com/)
 
 This view engine avoids throwing errors on undefined values.
 The engine instead, simply hides undefined (or falsy) values.
