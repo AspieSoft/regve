@@ -17,57 +17,96 @@ let viewsType = '';
 const lazyLoadKey = crypto.randomBytes(16).toString('hex');
 
 const tagFunctions = {
-    'each': {hasContent: true, func: function(attrs, content, options){
-            if((mainOptions && (mainOptions.noEach || mainOptions.noForEach)) || options.noEach || options.noForEach){return;}
-            let val = getObj(options, attrs[0]);
-            if(!val){return;}
-            let setVal = false; let setIndex = false;
-            if(attrs.includes('as')){setVal = attrs[attrs.indexOf('as')+1];}
-            if(attrs.includes('of')){setIndex = attrs[attrs.indexOf('of')+1];}
-            let result = '';
-            forEach(val, (val, i) => {
-                if(!setVal && !setIndex){result += content;}
-                result += content.replace(/({{{?)([\w_\-.:\[\]|]*?)(=)?(?:"?\s*?((?:\w|\$)(?:[\w_\-.:\[\]|$]+))\s*?"?)(}}}?)/g, (str, open, attr, isAttr, tag, close) => {
-                    tag = tag.replace(/[^\w_\-.:\[\]|$]/g, '').replace(/[.:\[\]]/g, '.').replace(/\.\./g, '.');
-                    if(tag.endsWith('.')){tag = tag.substring(0, tag.lastIndexOf('.'));}
-                    let tagStart = tag;
-                    if(tagStart.includes('.')){tagStart = tagStart.substring(0, tag.indexOf('.'));}
-                    if(tagStart !== setVal && tagStart !== setIndex){return str;}
-                    if(tag.includes('.')){tag = tag.replace(tagStart+'.', '');}else{tag = '';}
-                    let cleanHtml = !(open === '{{{' && close === '}}}');
-                    function result(str){if(!str){return '';}str = str.toString();if(str && str.trim() !== ''){if(!cleanHtml){return str;}return escapeHtml(str);}return '';}
-                    if(tagStart === setVal){
-                        let resultItem = result(getObj(val, tag) || val);
-                        if(isAttr){
-                            if(attr){return attr+'="'+resultItem+'"';}
-                            return tagStart+'="'+resultItem+'"';
-                        }return resultItem;
-                    }else if(tagStart === setIndex){
-                        let resultItem = result(i);
-                        if(isAttr){
-                            if(attr){return attr+'="'+resultItem+'"';}
-                            return tagStart+'="'+resultItem+'"';
-                        }return resultItem;
+    'if': {hasContent: true, func: function(attrs, content, options){
+            if(!isDefined(content)){return;}
+            attrs = [attrs.join(' ')];
+            content = content.split(/({{{?else(?:\s*?[^}]*|)}}}?)/g).map(attr => {
+                if(attr.match(/({{{?else(?:\s*?[^}]*|)}}}?)/g)){
+                    attr = attr.replace(/{{{?else(\s*?[^}]*|)}}}?/g, '$1');
+                    if(!attr || attr.trim() === ''){attr = true;}
+                    attrs.push(attr);
+                    return undefined;
+                }return attr;
+            }).filter(str => str !== undefined);
+            if(!attrs.includes(true)){attrs.push(true);}
+            for(let i = 0; i < attrs.length; i++){
+                if(attrs[i] === true || checkTrue(attrs[i])){
+                    return content[i] || false;
+                }
+            }
+            function checkTrue(attrs){
+                attrs = attrs.split(/[&|]/g);
+                let isTrue = false;
+                for(let i = 0; i < attrs.length; i++){
+                    attrs[i] = attrs[i].trim();
+                    if(attrs[i] !== ''){
+                        if(isTrue && attrs[i] === '|'){
+                            break;
+                        }else if(!isTrue && attrs[i] === '&'){
+                            break;
+                        }else if(attrs[i] !== '&' && attrs[i] !== '|'){
+                            isTrue = runIfStatement(attrs[i], options);
+                        }
                     }
-                    return str;
+                }
+                return isTrue;
+            }
+        }},
+    'each': {hasContent: true, attrs: ['as', 'of', 'from'], func: function(attrs, content, options){
+            if((mainOptions && (mainOptions.noEach || mainOptions.noForEach)) || options.noEach || options.noForEach){return;}
+            let objAttr = attrs[0]; delete attrs[0];
+            if(objAttr.includes('&')){objAttr = objAttr.split('&');}
+            else{objAttr = [objAttr];}
+            let result = '';
+            for(let a = 0; a < objAttr.length; a++){
+                let val = getObj(options, objAttr[a]);
+                if(val){
+                    forEach(val, (val, i) => {
+                        if(!attrs.as && !attrs.of){result += content;}
+                        result += content.replace(/({{{?)([\w_\-.:\[\]|]*?=|)(?:"?\s*?((?:\w|\$)(?:[^"}]*))"?)(}}}?)/g, (str, open, attr, tag, close) => {
+                            tag = tag.replace(/[.:\[\]]/g, '.').replace(/\.\./g, '.');
+                            if(tag.endsWith('.')){tag = tag.substring(0, tag.lastIndexOf('.'));}
+                            let tagStart = tag;
+                            if(tagStart.includes('.')){tagStart = tagStart.substring(0, tag.indexOf('.'));}
+                            if(!Object.values(attrs).includes(tagStart)){return str;}
+                            if(tag.includes('.')){tag = tag.replace(tagStart+'.', '');}else{tag = '';}
+                            let cleanHtml = !(open === '{{{' && close === '}}}');
+                            function result(str){
+                                let resultItem = '';
+                                if(str || str === 0){str = str.toString(); if(str && str.trim() !== ''){if(!cleanHtml){resultItem = str;}else{resultItem = escapeHtml(str);}}}
+                                if(attr && attr.trim() !== ''){
+                                    if(attr.trim() !== '='){return attr+'"'+resultItem+'"';}
+                                    return tagStart+'="'+resultItem+'"';
+                                }return resultItem;
+                            }
+                            if(tagStart === attrs.as){
+                                return result(getObj(val, tag) || val);
+                            }else if(tagStart === attrs.of){
+                                return result(i);
+                            }else if(tagStart === attrs.from){
+                                return result(objAttr[a]);
+                            }return str;
+                        }).replace(/({{{?)(?:#(\w(?:[\w_\-:]+))\s+?(.*?))(}}}?)/g, (str, open, tag, attr, close) => {
+                            attr = attr.split(/([ &|=<>])/g).map(attr => {
+                                let attrStart = attr;
+                                if(attrStart.includes('.')){attrStart = attrStart.substring(0, tag.indexOf('.'));}
 
-                    //test regex
-                }).replace(/({{{?)(?:#(\w(?:[\w_\-:]+))\s+?(.*?))(}}}?)/g, (str, open, tag, attr, close) => {
-                    attr = attr.split(/([ &|])/g).map(attr => {
-                        let attrStart = attr;
-                        if(attrStart.includes('.')){attrStart = attrStart.substring(0, tag.indexOf('.'));}
-                        if(attrStart !== setVal){return attr;}
-                        if(attr.includes('.')){attr = '.'+attr.replace(attrStart+'.', '');}else{attr = '';}
-                        return attrs[0]+'.'+i+attr;
-                    }).join('');
-                    return '{{#'+tag+' '+attr+'}}';
-                });
-            });
+                                if(attrStart  === attrs.from){return '\''+objAttr[a]+'\'';}
+
+                                if(attrStart !== attrs.as){return attr;}
+                                if(attr.includes('.')){attr = '.'+attr.replace(attrStart+'.', '');}else{attr = '';}
+                                return objAttr[a]+'.'+i+attr;
+                            }).join('');
+                            return '{{#'+tag+' '+attr+'}}';
+                        });
+                    });
+                }
+            }
             return result;
         }},
     'import': {hasContent: false, func: function(attrs, content, options, init = false){
             if((mainOptions && mainOptions.noImports) || options.noImports){return;}
-            if(attrs){
+            if(attrs && attrs[0]){
                 let fileType = viewsType || mainOptions.type || mainOptions.extension || 'html';
                 if(fileType.startsWith('.')){fileType = fileType.replace('.', '');}
                 let filePath = path.join(viewsPath || mainOptions.dir || mainOptions.path || __dirname, attrs[0]+'.'+fileType);
@@ -77,7 +116,7 @@ const tagFunctions = {
                     if(fs.existsSync(filePath)){try{result = fs.readFileSync(filePath);}catch(e){result = undefined;}}
                     setFileCache(filePath, result, options);
                 }
-                if(result && !init){return replaceAllTags(autoCloseTags(result), options);}
+                if(result && !init){return runAllTags(autoCloseTags(result), options);}
                 if(result){return autoCloseTags(result);}
             }
         }}
@@ -151,7 +190,11 @@ function engine(filePath, options, callback){
     }
 }
 
-function filterExists(str){return str && str.toString().trim() !== '';}
+function filterExists(str){return (str || str === 0) && str.toString().trim() !== '';}
+function isDefined(val){
+    if((typeof val === 'string' && val.trim() === '') || (typeof val === 'object' && Object.keys(val).length <= 0) || (Array.isArray(val) && val.length <= 0)){return false;}
+    return !!(val || val === 0 || val === false);
+}
 
 function render(str, options){
     str = str.toString();
@@ -162,7 +205,14 @@ function render(str, options){
     if(!str.endsWith('\n')){str += '\n\r';}
     str = autoCloseTags(str);
 
-    if(!options){options = {};}
+    if(options){
+        let opts = {};
+        forEach(options, (opt, i) => {
+            if(typeof opt === 'function'){return;}
+            if(['string', 'number', 'boolean', 'object'].includes(typeof opt) || Array.isArray(opt)){opts[i] = opt;}
+        }); options = opts;
+    }else{options = {};}
+    if(!options['$']){options['$'] = {};}
 
     if(options.lazyLoad && typeof options.lazyLoad !== 'object'){options.lazyLoad = {method: 'post', tag: 'body', data: false};}
     if(options.lazyLoad){
@@ -203,16 +253,18 @@ function render(str, options){
         if(layout){str = layout.replace(/{{{body}}}/g, str).replace(/{{body}}/g, escapeHtml(str));}
     }
 
-    function runNoHtmlTags(str){
+    function runNoHtmlTags(str, keepTags){
         str = str.replace(/{{{?#(no[_-]?html).*?}}}?(.*?){{{?\/(\1).*?}}}?/gsi, (str, tag, content) => {
             if(!content || content.trim() === ''){return '';}
-            return escapeHtml(content);
+            let result = escapeHtml(content);
+            if(keepTags){result = '{{#no-html}}'+result+'{{/no-html}}';}
+            return result;
         });
         return str;
     }
-    str = runNoHtmlTags(str);
+    str = runNoHtmlTags(str, true);
 
-    if((!mainOptions || !mainOptions.noImports) && !options.noImports){
+    if(options.lazyLoad && (!mainOptions || !mainOptions.noImports) && !options.noImports){
         str = str.replace(/({{{)#import (.*?)(}}})/gsi, (str, open, attr, close) => {
             if(!attr || attr.trim() === ''){return '';}
             attr = attr.trim();
@@ -259,45 +311,9 @@ function render(str, options){
         }
     }
 
-    str = replaceAllTags(str, options);
+    str = runAllTags(str, options);
 
-    let ranTagGroup = false;
-
-    str = str.replace(/({{{?)#(\w(?:[\w_\-:])+)(.*?)(}}}?)(.*?)({{{?)\/(\2+)(}}}?)/gs, (str, open, tag, attrs, close, content) => {
-        if(!tag || tag.trim() === ''){return str;}
-        tag = tag.trim();
-        if(tag.includes(':')){tag = tag.substring(0, tag.indexOf(':')).trim();}
-        if(tag === 'delete'){return '';}
-        if(tag.match(/no[_-]?html/gi)){return escapeHtml(content);}
-        if(tag.match(/no[_-]?markdown/gi)){return '{{#no-markdown}}\n'+content+'\n{{/no-markdown}}';}
-        if(attrs){attrs = attrs.split(' ').filter(filterExists);}
-        if(tagFunctions[tag]){
-            ranTagGroup = true;
-            return tagFunctions[tag].func(attrs, content, options) || '';
-        }
-        return '';
-    });
-
-    function runTagGroups(str, open, tag, attrs, close, content){
-        if(!tag){return str;}
-        tag = tag.trim();
-        if(tag.includes(':')){tag = tag.substring(0, tag.indexOf(':')).trim();}
-        if(tag.match(/no[_-]?markdown/gi)){return '{{#no-markdown}}\n'+content+'\n{{/no-markdown}}';}
-        if(attrs){attrs = attrs.split(' ').filter(filterExists);}
-        if(tagFunctions[tag]){
-            ranTagGroup = true;
-            return tagFunctions[tag].func(attrs, content, options) || '';
-        }
-        return '';
-    }
-
-    let loops = 100;
-    while(ranTagGroup && loops-- > 0){
-        ranTagGroup = false;
-        str = str.replace(/({{{?)#(\w(?:[\w_\-:])+)(.*?)(}}}?)(.*?)({{{?)\/(\2+)(}}}?)/gs, runTagGroups);
-        if(loops < 0){break;}
-    }
-
+    str = runNoHtmlTags(str);
 
     if(options.lazyLoad && options.lazyLoad.afterVars && options.lazyLoad.tag){
         let splitRegex = new RegExp('(<'+options.lazyLoad.tag.toString()+'(?:(?:\\s+?[^>]*?)|)>)(.*?)(<\\/'+options.lazyLoad.tag.toString()+'>)', 'gsi');
@@ -342,6 +358,167 @@ function render(str, options){
     return str.toString().trim();
 }
 
+
+
+function runAllTags(str, options){
+    //str = indexContainerTagFunctions(str);
+    str = runContainerTagFunctions(str, options);
+    str = runBasicTagFunctions(str, options);
+    str = runVarTags(str, options);
+    return str;
+}
+
+function indexContainerTagFunctions(str){
+    let tagLevels = {};
+    return str.toString().replace(/({{{?)([#/])([\w_\-]+)(?::[0-9]|)([^}]*)(}}}?)/g, (str, open, type, tag, attrs, close) => {
+        if(!tagLevels[tag]){tagLevels[tag] = 0;}
+        if(type === '#'){tagLevels[tag]++;}
+        let result = open+type+tag+':'+tagLevels[tag]+attrs+close;
+        if(type === '/'){tagLevels[tag]--;}
+        if(tagLevels[tag] < 0){return '';}
+        return result;
+    });
+}
+
+function runContainerTagFunctions(str, options){
+    let opts = {...options};
+    let tagData = {level: 0};
+    let replaceContentList = [];
+    str = str.toString().replace(/({{{?)([#/$])([\w_\-]+)(:[0-9]|)([^}]*)(}}}?)/g, (thisStr, open, type, tag, tagIndex, attrs, close, regexIndex) => {
+        if(tag.trim().match(/(no[_-]?markdown|no[_-]?html|lazy[_-]?load)/gi)){return thisStr;}
+        attrs = attrs.trim();
+        if(type === '$' && attrs.startsWith('=')){
+            opts['$'][tag] = getObj(opts, attrs) || undefined;
+        }else if(type === '#' && tagData.level <= 0){
+            if(tagFunctions[tag] && tagFunctions[tag].hasContent){
+                tagData.level = 1;
+                tagData.func = tag;
+                tagData.index = tagIndex;
+                tagData.attrs = attrs;
+                tagData.cleanHtml = !(open === '{{{' && close === '}}}');
+                tagData.attrTypes = tagFunctions[tag].attrs || false;
+                tagData.regexIndex = regexIndex;
+                tagData.strLength = thisStr.length;
+                tagData.thisStr = thisStr;
+                //return '';
+            }
+        }else if(type === '/' && tag === tagData.func && tagIndex === tagData.index && tagData.level <= 1){
+            if(typeof tagFunctions[tag].func === 'function'){
+                let attrs = tagData.attrs.split(' ').map(attr => attr.trim()).filter(filterExists);
+                if(tagData.attrTypes){
+                    let newAttrs = {};
+                    forEach(tagData.attrTypes, attrType => {
+                        let index = attrs.indexOf(attrType);
+                        if(!index){index = attrs.indexOf(attrType+':');}
+                        if(index !== -1 && attrs[index+1]){
+                            newAttrs[attrType] = attrs[index+1];
+                            attrs[index] = undefined; attrs[index+1] = undefined;
+                        }
+                    });
+                    let nextIndex = 0;
+                    forEach(attrs, attr => {
+                        if(!attr){return;}
+                        let i = nextIndex++;
+                        while(newAttrs[i] && nextIndex < 1000){i = nextIndex++; if(nextIndex > 1000){break;}}
+                        if(attr && !newAttrs[i]){newAttrs[i] = attr;}
+                    });
+                    attrs = newAttrs;
+                }
+                let tagContent = str.substring(tagData.regexIndex+tagData.strLength, regexIndex);
+                let result = tagFunctions[tag].func(attrs, tagContent, opts, tagData.cleanHtml && !(open === '{{{' && close === '}}}'));
+                let replaceStr = tagData.thisStr+tagContent+thisStr;
+                tagData = {level: 0};
+                if(isDefined(result)){
+                    if(typeof result === 'object'){
+                        if(result.options){result.opts = result.options;}
+                        if(result.opts){Object.assign(opts, result.opts);}
+                        replaceContentList.push([replaceStr, runContainerTagFunctions(result.content || result.result || tagContent || '', opts) || '']);
+                        //return runContainerTagFunctions(result.content || result.result || tagContent || '', opts) || '';
+                    }
+                    replaceContentList.push([replaceStr, runContainerTagFunctions(result || '', opts) || '']);
+                    //return runContainerTagFunctions(result || '', opts) || '';
+                }//return '';
+            }
+        }else if(tagData.level > 0){
+            if(type === '#' && tag === tagData.func){tagData.level++;}
+            else if(type === '/' && tag === tagData.func){tagData.level--;}
+        }return thisStr;
+    });
+
+    //todo: improve temp fix (for performance)
+    for(let i = 0; i < replaceContentList.length; i++){str = str.replace(replaceContentList[i][0], replaceContentList[i][1]);}
+
+    return str;
+}
+
+function runBasicTagFunctions(str, options){
+    let opts = {...options};
+    return str.toString().replace(/({{{?)([#$])([\w_\-]+)(:[0-9]|)([^}]*)(}}}?)/g, (str, open, type, tag, tagIndex, attrs, close) => {
+        if(tag.trim().match(/(no[_-]?markdown|no[_-]?html|lazy[_-]?load)/gi)){return str;}
+        attrs = attrs.trim();
+        if(type === '$' && attrs.startsWith('=')){
+            opts['$'][tag] = getObj(opts, attrs) || undefined;
+        }else if(type === '#' && tagFunctions[tag] && !tagFunctions[tag].hasContent && typeof tagFunctions[tag].func === 'function'){
+            attrs = attrs.split(' ').map(attr => attr.trim()).filter(filterExists);
+            if(tagFunctions[tag].attrs){
+                let newAttrs = {};
+                forEach(tagFunctions[tag].attrs, attrType => {
+                    let index = attrs.indexOf(attrType);
+                    if(!index){index = attrs.indexOf(attrType+':');}
+                    if(index && attrs[index+1]){
+                        newAttrs[attrType] = attrs[index+1];
+                        delete attrs[index]; delete attrs[index+1];
+                    }
+                });
+                let nextIndex = 0;
+                forEach(attrs, attr => {
+                    let i = nextIndex++;
+                    while(newAttrs[i] && nextIndex < 1000){i = nextIndex++; if(nextIndex > 1000){break;}}
+                    if(attr && !newAttrs[i]){newAttrs[i] = attr;}
+                });
+                attrs = newAttrs;
+            }
+            let result = tagFunctions[tag].func(attrs, null, opts, !(open === '{{{' && close === '}}}'));
+            if(isDefined(result)){
+                if(typeof result === 'object'){
+                    if(result.options){result.opts = result.options;}
+                    if(result.opts){Object.assign(opts, result.opts);}
+                    return result.content || result.result || '';
+                }return result;
+            }return '';
+        }return str;
+    });
+}
+
+function runVarTags(str, options){
+    let opts = {...options};
+    return str.toString().replace(/({{{?)((?:[\w_\-:$]+)\s*?=\s*?|\s*?=\s*?|)([^}]+)(}}}?)/g, (str, open, type, tag, close) => {
+        if(tag && tag.trim() !== ''){
+            let result = '';
+            tag = tag.trim(); let isQuote = false;
+            if(tag.startsWith('-') || tag.startsWith('#') || tag.startsWith('/')){return str;}
+            if(tag.startsWith('"') && tag.endsWith('"')){tag = tag.substring(tag.indexOf('"')+1, tag.lastIndexOf('"')); isQuote = true;}
+            if(type){type = type.trim().replace(/\s/g, '');}
+            let obj = getObj(opts, tag);
+            if(type.startsWith('$') && type.includes('=')){
+                if(isQuote){obj = '"'+obj.toString()+'"';}
+                opts['$'][type.replace(/[$=]/g, '')] = obj;
+                return '';
+            }
+            if(type === '='){result = tag.split('|', 1)[0]+'='; isQuote = true;}
+            else if(type.includes('=')){result = type; isQuote = true;}
+            if(isDefined(obj)){
+                if(isQuote){result += '"';}
+                if(!(open === '{{{' && close === '}}}')){result += escapeHtml(obj);}
+                else{result += autoCloseTags(obj);}
+                if(isQuote){result += '"';}
+                return result;
+            }return '';
+        }return str;
+    });
+}
+
+
 function replaceAllTags(str, options){
     const container = [];
     return str.toString().replace(/({{{?)([^}]+)(}}}?)/g, (str, open, tag, close) => {
@@ -354,14 +531,15 @@ function replaceAllTags(str, options){
                 return str;
             }
             return escapeHtml(str);
-        }else if(tag.match(/\#no[_-]?html/i)){container.push({tag: 'no-html'}); return str;}
+        }else if(tag.match(/#no[_-]?html/i)){container.push({tag: 'no-html'}); return str;}
 
         let cleanHtml = !(open === '{{{' && close === '}}}');
         function result(str){if(!str){return '';}str = str.toString();if(str && str.trim() !== ''){if(!cleanHtml){return str;}return escapeHtml(str);}return '';}
 
         if(tag.match(/^(?:[#\/](?:delete|lazy[_-]?load|no[_-]?markdown))/i) || tag.match(/^(?:-(\w(?:[\w_\-]+)))/)){return str;}
 
-        if(tag.match(/^(?:else(\s+?(.*?)|))/) && container.find(item => item.tag === 'if')){
+        if(tag.match(/^(?:else(\s+?(.*?)|))/) && container.find(item => item.tag === 'if') && !container.find(item => item.tag !== 'if')){
+            if(container.find(item => item.tag !== 'if')){return str;}
             tag = tag.replace(/^(?:else(\s+?(.*?)|))/, '$1');
             if(!tag || tag.trim() === ''){tag = false;}
             else{tag = tag.toString().split(/([&|])/g).map(tag => tag.toString().trim());}
@@ -450,6 +628,7 @@ function replaceAllTags(str, options){
             return resultVal;
         }else if(tag.match(/^(?:#(if)\s+?(.*?))/)){
             // if open tag
+            if(container.find(item => item.tag !== 'if')){return str;}
             tag = tag.split(/^(?:#(if)\s+?(.*?))/).filter(filterExists);
             let method = tag.shift();
             if(!tag[0]){return '';}
@@ -473,6 +652,7 @@ function replaceAllTags(str, options){
             return '';
         }else if(tag.match(/^(?:\/(if))/)){
             // if close tag
+            if(container.find(item => item.tag !== 'if')){return str;}
             tag = tag.replace(/^(?:\/(if))/, '$1');
             if(container.find(item => item.tag === tag)){
                 while(container[container.length-1].tag !== tag && container.length > 0){container.pop();}
@@ -513,11 +693,11 @@ function runIfStatement(val, options){
         let t = val.split(separator);
         if(t[0]){
             t[0] = getObj(options, t[0].toString().trim());
-            if(t[0] && t[0].toString().match(/[0-9.]/) && !isNaN(Number(t[0]))){t[0] = Number(t[0]);}
+            if(t[0] && t[0].toString().match(/[0-9.]/) && !isNaN(Number(t[0].toString().replace(/'/g, '')))){t[0] = Number(t[0].toString().replace(/'/g, ''));}
         }
         if(t[1]){
             t[1] = getObj(options, t[1].toString().trim());
-            if(t[1] && t[1].toString().match(/[0-9.]/) && !isNaN(Number(t[1]))){t[1] = Number(t[1]);}
+            if(t[1] && t[1].toString().match(/[0-9.]/) && !isNaN(Number(t[1].toString().replace(/'/g, '')))){t[1] = Number(t[1].toString().replace(/'/g, ''));}
         }return [t[0], t[1]];
     }
 

@@ -19,12 +19,19 @@ Info on how to set up lazy loading is towards the bottom of this page.
 
 The view engine runs mainly through regex functions, to try and gain improved speed and performance.
 
-The syntax of this view engine is similar to handlebars, but with a twist. (So remember to read the documentation)
+The syntax of this view engine is similar to handlebars, but with a few unique changes. (So remember to read the documentation)
 
 This view engine has some (optional) basic markdown like features, by using regex to replace markdown with html.
 You can add variables and use if and each statements.
 You can also import other views into the current view.
 You can choose any html tag name, and have it automatically moved to a different location.
+
+The if statements support & (and) | (or) operators, as will as the ! (not) operator.
+If statements also support < = > and you can check if a var is equal to a 'string'.
+
+There are also some shortened methods for doing common tasks in a simpler way.
+
+Most of the regex in this npm module, was manually checked with the safe-regex module.
 
 ### Installation
 
@@ -214,6 +221,18 @@ app.set('view engine', 'html');
     {{index}} = {{item}}
 {{/each}}
 
+<!-- you can also include from object (outputs the name of the object your running on) -->
+{{#each list as item of index from object}}
+    {{object}} <!-- output: list -->
+    {{index}} = {{item}}
+{{/each}}
+
+<!-- these attrs can be in any order (or undefined), as long as the object your running on is first -->
+{{#each list from object of index as item}}
+    {{object}}:
+    {{index}} = {{item}}
+{{/each}}
+
 <!-- each statements with objects -->
 <!-- in js {list: [{id: 'userID1', name: 'username1'}, {id: 'userID2', name: 'user2'}]} -->
 {{#each list as item of index}}
@@ -236,6 +255,16 @@ app.set('view engine', 'html');
             <a {{href="item.url"}}>{{item.name}}</a>
         {{/each}}
     </div>
+{{/each}}
+
+<!-- you can run 2 or more each statements at the same time with the & (and) operator (no spaces) -->
+{{#each list1&list2 as item of index from list}}
+    {{list}}:
+    {{index}} = {{item}}
+    {{#if list = 'list1'}}
+        this is the first list
+    {{/if}}
+    <br>
 {{/each}}
 
 
@@ -275,6 +304,7 @@ regve.render('index', {$: {myVar: 'a new var default'});
 
 
 <!-- basic markdown support -->
+<!-- note: markdown is not escaped in objects, but it is limited so your users can use it in comments -->
 #h1
 ##h2
 ###h3
@@ -284,8 +314,10 @@ regve.render('index', {$: {myVar: 'a new var default'});
 
 --- = <hr>
 
-<!-- only runs if url is Not in "quotes" -->
+<!-- auto clickable http and https links -->
 https://example.com = <a href="https://example.com">https://example.com</a>
+<!-- only runs if url is Not in "quotes" -->
+<a href="https://example.com">example</a> = <a href="https://example.com">example</a>
 
 `p tag` = <p>p tag</p>
 
