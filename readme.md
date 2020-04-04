@@ -11,27 +11,35 @@
 
 [![paypal](https://img.shields.io/badge/buy%20me%20a%20coffee-paypal-blue)](https://buymeacoffee.aspiesoft.com/)
 
+This module is focused on being a fast, and easy to use view engine for nodejs.
+Running most things in regex allows for a lightweight, fast, and dynamic html template engine.
+
 This view engine avoids throwing errors on undefined values.
 The engine instead, simply hides undefined (or falsy) values.
-
-The engine also has an (optional) easy to use, page lazy load system.
-Info on how to set up lazy loading is towards the bottom of this page.
+This means, you dont get that annoying crash when you simply dont what to show a value,
+instead the engine assumes you want to use the value only if it exists.
+It can handle nested objects without crashing even if the parent (or grandparent) object is undefined
 
 The view engine runs mainly through regex functions, to try and gain improved speed and performance.
+Additionally, regex has the benefit of recognizing patters, which allows for an easy dynamic template engine.
 
-The syntax of this view engine is similar to handlebars, but with a few unique changes. (So remember to read the documentation)
+The syntax of this view engine is similar to handlebars, so getting started should be easy.
+This is to start you off with a pattern that you may be familiar with already.
+Although, this is not completely the same as handlebars, and .hbs files will complain about errors, which do not exist in this template engine.
+In this template engine, those errors do not exist, because there handled dynamically and common mistakes are recognized and corrected by the engine.
+
+To help with crash resistance, the file is read, not run.
+This view engine is running on javascript regex functions, so a file is simply read as a string.
 
 This view engine has some (optional) basic markdown like features, by using regex to replace markdown with html.
 You can add variables and use if and each statements.
 You can also import other views into the current view.
 You can choose any html tag name, and have it automatically moved to a different location.
 
-The if statements support & (and) | (or) operators, as will as the ! (not) operator.
+The if statements support & (and) | (or) operators, as well as the ! (not) operator.
 If statements also support < = > and you can check if a var is equal to a 'string'.
 
 There are also some shortened methods for doing common tasks in a simpler way.
-
-Most of the regex in this npm module, was manually checked with the safe-regex module.
 
 ### Installation
 
@@ -122,7 +130,7 @@ app.set('view engine', 'html');
 <script src="/script.js" nonce="12345"></script>
 
 
-<!-- if/unless statements -->
+<!-- if statements -->
 {{#if title}}
     <title>{{title}}</title>
 {{else}}
