@@ -6,6 +6,8 @@ const crypto = require('crypto');
 const safeRegex = require('safe-regex');
 const memoryCache = require('obj-memory-cache');
 
+const localCache = memoryCache.newCache();
+
 const singleTagsList = ['meta', 'link', 'img', 'br', 'hr', 'input'];
 
 const styleSheetRegex = /(<(?:link)(?:.*?)(?:rel="stylesheet")(?:[^>]+)?>)/gs;
@@ -137,12 +139,12 @@ function defineSingleTagType(name){
 }
 
 function getFileCache(filePath){
-    return memoryCache.get('regve:template_file_cache:'+filePath);
+    return localCache.get('template_file_cache:'+filePath);
 }
 
 function setFileCache(filePath, data, options){
     if(data){data = data.toString();}
-    memoryCache.set('regve:template_file_cache:'+filePath, data, {expire: options.cache || mainOptions.cache});
+    localCache.set('template_file_cache:'+filePath, data, {expire: options.cache || mainOptions.cache});
 }
 
 function engine(filePath, options, callback){

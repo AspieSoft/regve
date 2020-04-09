@@ -1,6 +1,6 @@
 {
   "name": "regve",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "A fast and dynamic view engine that runs on regex.",
   "license": "MIT",
   "author": "AspieSoft",
@@ -24,7 +24,7 @@
     "nodejs"
   ],
   "dependencies": {
-    "obj-memory-cache": "^0.1.6",
+    "obj-memory-cache": "^0.2.0",
     "safe-regex": "^2.1.1"
   }
 }
