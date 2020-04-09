@@ -18,7 +18,8 @@ This view engine avoids throwing errors on undefined values.
 The engine instead, simply hides undefined (or falsy) values.
 This means, you dont get that annoying crash when you simply dont what to show a value,
 instead the engine assumes you want to use the value only if it exists.
-It can handle nested objects without crashing even if the parent (or grandparent) object is undefined
+It can handle nested objects without crashing even if the parent (or grandparent) object is undefined.
+This module also auto closes html tags (apart from those that should not close), and removes html comments unless they start with ! or @, or they include copyright, (c), license, or licence.
 
 The view engine runs mainly through regex functions, to try and gain improved speed and performance.
 Additionally, regex has the benefit of recognizing patters, which allows for an easy dynamic template engine.
