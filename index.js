@@ -74,6 +74,7 @@ const tagFunctions = {
                             if(tag.includes('.')){tag = tag.replace(tagStart+'.', '');}else{tag = '';}
                             let cleanHtml = !(open === '{{{' && close === '}}}');
                             function result(str){
+                                if(str === undefined || str === null || !['string', 'number', 'bolean'].includes(typeof str)){return '';}
                                 let resultItem = '';
                                 if(str || str === 0){str = str.toString(); if(str && str.trim() !== ''){if(!cleanHtml){resultItem = str;}else{resultItem = escapeHtml(str);}}}
                                 if(attr && attr.trim() !== ''){
@@ -364,7 +365,7 @@ function render(str, options){
 
 
 function removeComments(str){
-    return str.replace(/<!--\s+?(?!@|!)(.*?)-->/gs, str => {
+    return str.replace(/<!--\s+?(?![@!])(.*?)-->/gs, str => {
         if(str.includes('license') || str.includes('licence') || str.includes('(c)') || str.includes('copyright')){
             return str;
         }return '';
@@ -512,6 +513,7 @@ function runVarTags(str, options){
             if(tag.startsWith('"') && tag.endsWith('"')){tag = tag.substring(tag.indexOf('"')+1, tag.lastIndexOf('"')); isQuote = true;}
             if(type){type = type.trim().replace(/\s/g, '');}
             let obj = getObj(opts, tag);
+            if(obj === undefined || obj === null || !['string', 'number', 'bolean'].includes(typeof obj)){return str;}
             if(type.startsWith('$') && type.includes('=')){
                 if(isQuote){obj = '"'+obj.toString()+'"';}
                 opts['$'][type.replace(/[$=]/g, '')] = obj;
@@ -1109,7 +1111,6 @@ function getObj(obj, path){
         if(result){return result;}
     }return undefined;
 }
-
 
 module.exports = (() => {
     let exports = function(options = false){
