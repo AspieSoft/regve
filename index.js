@@ -37,7 +37,7 @@ const tagFunctions = {
                 }
             }
             function checkTrue(attrs){
-                attrs = attrs.split(/[&|]/g);
+                attrs = attrs.split(/([&|])/g);
                 let isTrue = false;
                 for(let i = 0; i < attrs.length; i++){
                     attrs[i] = attrs[i].trim();
@@ -360,7 +360,7 @@ function render(str, options){
 
     str = autoCloseTags(str);
 
-    return str.toString().trim();
+    return str.toString().trim().replace(/(\t|\s\s+)\r?\n+/g, '');
 }
 
 
@@ -792,15 +792,17 @@ function lazyLoadScript(lazyLoad, nonceKey){
                 }
             });
         }
-        if(typeof $ === 'function' || typeof $ === 'object'){
-            loadPageAjax($);
-        }else if(typeof jQuery === 'function' || typeof jQuery === 'object'){
-            loadPageAjax(jQuery);
-        }else if(typeof jquery === 'function' || typeof jquery === 'object'){
-            loadPageAjax(jquery);
-        }else{
-            loadPageXml();
-        }
+        setTimeout(function(){
+            if(typeof $ === 'function' || typeof $ === 'object'){
+                loadPageAjax($);
+            }else if(typeof jQuery === 'function' || typeof jQuery === 'object'){
+                loadPageAjax(jQuery);
+            }else if(typeof jquery === 'function' || typeof jquery === 'object'){
+                loadPageAjax(jquery);
+            }else{
+                loadPageXml();
+            }
+        }, 100);
     })();
     </script>
     `;
