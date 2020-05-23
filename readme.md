@@ -7,7 +7,6 @@
 
 ![npm](https://img.shields.io/npm/dw/regve)
 ![npm](https://img.shields.io/npm/dm/regve)
-![GitHub last commit](https://img.shields.io/github/last-commit/aspiesoft/regve)
 
 [![paypal](https://img.shields.io/badge/buy%20me%20a%20coffee-paypal-blue)](https://buymeacoffee.aspiesoft.com/)
 
@@ -45,7 +44,7 @@ There are also some shortened methods for doing common tasks in a simpler way.
 ### Installation
 
 ```shell script
-npm install regve
+npm install @aspiesoft/regve
 ```
 
 ### Setup
@@ -54,7 +53,7 @@ npm install regve
 // express
 
 const express = require('express');
-const regve = require('regve');
+const regve = require('@aspiesoft/regve');
 
 const app = express();
 
@@ -69,7 +68,7 @@ app.use(function(req, res, next){
 
 // render from string
 
-const regve = require('regve');
+const regve = require('@aspiesoft/regve');
 
 regve({/* global options */});
 

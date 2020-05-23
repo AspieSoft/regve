@@ -1,6 +1,6 @@
 {
-  "name": "regve",
-  "version": "0.10.5",
+  "name": "@aspiesoft/regve",
+  "version": "0.11.0",
   "description": "A fast and dynamic view engine that runs on regex.",
   "license": "MIT",
   "author": "AspieSoft",
@@ -21,10 +21,14 @@
     "regular expression",
     "markdown",
     "lazy load",
+    "crash resistance",
     "nodejs"
   ],
   "dependencies": {
     "obj-memory-cache": "^0.2.1",
     "safe-regex": "^2.1.1"
+  },
+  "devDependencies": {
+    "miniforge-js": "^0.2.5"
   }
 }

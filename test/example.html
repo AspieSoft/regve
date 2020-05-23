@@ -1,0 +1,81 @@
+{{#import header}}
+
+<link rel="stylesheet" href="/style.css">
+
+<title>{{title}}</title>
+
+{{#each menus as menu of type}}
+    <div {{="type"}}>
+        {{#each menu as item}}
+            <a {{href="item.url"}}>{{item.name}}</a>
+        {{/each}}
+    </div>
+{{/each}}
+
+<br>
+
+{{#no-markdown}}
+
+{{#each list1&list2 as item of index from list}}
+    {{list}}:
+    {{index}} = {{item}}
+    {{#if list = 'list1'}}
+        this is list 1
+    {{/if}}
+    <br>
+{{/each}}
+
+{{/no-markdown}}
+
+<br><br>
+
+{{#no-markdown}}
+    ##markdown should not run here
+{{/no-markdown}}
+
+<br><br>
+
+{{#no-html}}
+    {{title}}
+    <test>html should not run here</test>
+{{/no-html}}
+
+<br><br>
+
+https://aspiesoft.com
+<br><br>
+<a href="https://aspiesoft.com">AspieSoft</a>
+
+<br><br>
+
+{{test | 'default'}}
+
+<br><br>
+
+{{#if title = 'test'}}
+    is test
+{{/if}}
+
+<br><br>
+
+{{$testVar = 'test var'}}
+
+{{$testVar}}
+
+<br><br>
+
+{{#if '1' < '2'}}
+    true
+{{else}}
+    false
+{{/if}}
+
+<br><br>
+
+{{#if title = 'test'}}
+    test
+{{/if}}
+
+<br><br>
+
+{{undefined var}}
