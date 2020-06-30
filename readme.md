@@ -8,7 +8,7 @@
 ![npm](https://img.shields.io/npm/dw/regve)
 ![npm](https://img.shields.io/npm/dm/regve)
 
-[![paypal](https://img.shields.io/badge/buy%20me%20a%20coffee-paypal-blue)](https://buymeacoffee.aspiesoft.com/)
+[![paypal](https://img.shields.io/badge/buy%20me%20a%20coffee-paypal-blue)](https://buymeacoffee.aspiesoft.com/from-npm/regve)
 
 This module is focused on being a fast, and easy to use view engine for nodejs.
 Running most things in regex allows for a lightweight, fast, and dynamic html template engine.
