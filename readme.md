@@ -1,4 +1,4 @@
-## Regex View Engine
+# Regex View Engine
 
 ![npm](https://img.shields.io/npm/v/regve)
 ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/regve)
@@ -8,7 +8,7 @@
 ![npm](https://img.shields.io/npm/dw/regve)
 ![npm](https://img.shields.io/npm/dm/regve)
 
-[![paypal](https://img.shields.io/badge/buy%20me%20a%20coffee-paypal-blue)](https://buymeacoffee.aspiesoft.com/from-npm/regve)
+[![paypal](https://img.shields.io/badge/buy%20me%20a%20coffee-paypal-blue)](https://buymeacoffee.aspiesoft.com)
 
 This module is focused on being a fast, and easy to use view engine for nodejs.
 Running most things in regex allows for a lightweight, fast, and dynamic html template engine.
@@ -41,13 +41,13 @@ If statements also support < = > and you can check if a var is equal to a 'strin
 
 There are also some shortened methods for doing common tasks in a simpler way.
 
-### Installation
+## Installation
 
 ```shell script
 npm install @aspiesoft/regve
 ```
 
-### Setup
+## Setup
 
 ```js
 // express
@@ -79,13 +79,13 @@ html = regve.render(html, {name: 'World'});
 console.log(html);
 ```
 
-### You can also define a template you want to use
+## You can also define a template you want to use
 
 ```js
 regve({template: 'layout'});
 ```
 
-### Other options you might need if Not using express
+## Other options you might need if Not using express
 
 ```js
 // if your Not using express, you can still define the the views path and file type in another way
@@ -96,7 +96,7 @@ regve({
 });
 ```
 
-### Usage
+## Usage
 
 ```js
 // to disable everything, and send raw html, just set the raw option to true
@@ -338,7 +338,7 @@ __underlined__
 ~~strike through~~
 ```
 
-### How to extract/move tags
+## How to extract/move tags
 
 ```js
 //you can add any tag name. custom tags also work
@@ -358,7 +358,7 @@ some other text
 <script src="script.js"></script>
 ```
 
-### Cache views into memory
+## Cache views into memory
 
 ```js
 // this can help reduce the number of calls to fs.reaFile()
@@ -377,7 +377,8 @@ app.engine('html', regve({cache: '1D'})); // 1 Day
 app.engine('html', regve({cache: '2m', cacheDev: true})); // 2 minutes (also runs in development)
 ```
 
-### run functions before and after render (express)
+## run functions before and after render (express)
+
 ```js
 // in express, you can set a callback function, just before, or just after res.render() runs
 // the data is the file data before or after rendered
@@ -408,7 +409,7 @@ res.render('index', {onAfterRender: function(data){
 }});
 ```
 
-### Other options
+## Other options
 
 ```js
 // to increase performance, you can globally skip some of the unused parts of the view engine
@@ -424,28 +425,28 @@ app.engine('regve', regve({
 app.engine('html', regve({keepInvalidVars: true}));
 ```
 
-### Creating your own template functions
+## Creating your own template functions
 
 ```js
 let hasContent = true || false; // default = false
 regve.addFunction('name', function(attrs, content, options){
     // attrs is an array of items added after the tag name, separated by spaces
     // example: {{#name attr1 attr2 attr3}}
-    
+
     // content only exists if hasContent is true
     // if hasContent is true, than you will need to close the tag with {{/name}}
     // example: {{#name attrs}} content {{/name}}
-    
+
     // options are the vars you set when adding the template
     // example: res.render('index', {/* options */});
-    
+
     // when your done, you need to return the new content
     // if you return nothing, the content is simply removed
     return content;
 }, hasContent);
 ```
 
-### Defining single type html elements
+## Defining single type html elements
 
 ```js
 // this module automatically closes any open tags, but it defines the tags that should not close
@@ -456,7 +457,7 @@ regve.defineSingleTagType('img');
 regve.defineSingleTagType('br');
 ```
 
-### Lazy Loading Pages
+## Lazy Loading Pages
 
 ```js
 // lazy loading a page as the user scrolls down, is one of the more advanced options this view engine has to offer
@@ -511,7 +512,7 @@ res.render('index', {lazyLoad: {earlyVars: ['myContent', 'myScripts', 'myStyles.
 // data parameter is required for the method that ajax requests to, so it can get the next piece of the page
 ```
 
-#### inside the template, and the tag you choose, use {{#lazyload}} to separate lazy loaded instances
+### inside the template, and the tag you choose, use {{#lazyload}} to separate lazy loaded instances
 
 ```html
 <!-- recommended, but Not dependent (optional) -->
@@ -548,7 +549,7 @@ res.render('index', {lazyLoad: {earlyVars: ['myContent', 'myScripts', 'myStyles.
 </body>
 ```
 
-### Lazy Load Event Listener
+## Lazy Load Event Listener
 
 ```js
 // client side javascript, there is a custom event listener you can use
@@ -559,7 +560,7 @@ document.addEventListener('onPageLazyLoad', function(e){
 });
 ```
 
-### Auto Ad Insert
+## Auto Ad Insert
 
 ```js
 // you can easily and automatically place your ads into your website

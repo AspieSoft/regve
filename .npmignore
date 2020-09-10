@@ -1,4 +1,7 @@
+.npmignore
 .github/
 test/
 src/
+app.js
+build.js
 main.js
