@@ -74,7 +74,7 @@ const tagFunctions = {
 							if(tag.includes('.')){tag = tag.replace(tagStart+'.', '');}else{tag = '';}
 							let cleanHtml = !(open === '{{{' && close === '}}}');
 							function result(str){
-								if(str === undefined || str === null || !['string', 'number', 'bolean'].includes(typeof str)){return '';}
+								if(str === undefined || str === null || !['string', 'number', 'boolean'].includes(typeof str)){return '';}
 								let resultItem = '';
 								if(str || str === 0){str = str.toString(); if(str && str.trim() !== ''){if(!cleanHtml){resultItem = str;}else{resultItem = escapeHtml(str);}}}
 								if(attr && attr.trim() !== ''){
@@ -150,7 +150,21 @@ function setFileCache(filePath, data, options){
 
 function engine(filePath, options, callback){
 	viewsType = filePath.substr(filePath.lastIndexOf('.'));
-	viewsPath = path.join(filePath, '..');
+
+  if(mainOptions.dir){
+    viewsPath = mainOptions.dir;
+  }else if(mainOptions.template || mainOptions.layout){
+    let lRoot = path.join(mainOptions.template || mainOptions.layout, '..');
+    let pRoot = path.join(filePath, '..');
+    if(lRoot.startsWith(pRoot)){
+      viewsPath = pRoot;
+    }else{
+      viewsPath = lRoot;
+    }
+  }else{
+    viewsPath = path.join(filePath, '..');
+  }
+
 	let fileData = getFileCache(filePath);
 	if(fileData){
 		if(mainOptions && typeof mainOptions.onBeforeRender === 'function'){
