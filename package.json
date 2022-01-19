@@ -1,6 +1,6 @@
 {
   "name": "@aspiesoft/regve",
-  "version": "1.0",
+  "version": "1.0.0",
   "description": "A fast and dynamic view engine that runs on regex.",
   "license": "MIT",
   "author": "AspieSoft",
