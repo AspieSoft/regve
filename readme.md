@@ -10,6 +10,8 @@
 
 [![paypal](https://img.shields.io/badge/buy%20me%20a%20coffee-paypal-blue)](https://buymeacoffee.aspiesoft.com)
 
+A fast and dynamic view engine similar to handlebars.
+
 This module is focused on being a fast, and easy to use view engine for nodejs.
 Running most things in regex allows for a lightweight, fast, and dynamic html template engine.
 
