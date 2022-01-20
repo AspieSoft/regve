@@ -9,3 +9,5 @@ console.log('Finished Build');
 const app = require('./index');
 const test = require('./test/test');
 test(app);
+
+setTimeout(function(){process.exit(0);}, 5000);

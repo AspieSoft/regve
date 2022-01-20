@@ -6,6 +6,8 @@ const crypto = require('crypto');
 const safeRegex = require('safe-regex');
 const memoryCache = require('obj-memory-cache');
 
+const basicMarkdown = require('./markdown');
+
 const localCache = memoryCache.newCache();
 
 const singleTagsList = ['meta', 'link', 'img', 'br', 'hr', 'input'];
@@ -1009,39 +1011,6 @@ function extractTags(str, tags, autoCloseTags = true){
 		}).join('');
 		str = str.replace(tagRegex, tagList.join('\n'));
 	});
-	return str;
-}
-
-function basicMarkdown(str){
-	if(!str && str !== 0 && str !== false){return null;}
-
-	str = str.toString();
-
-	str = str.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
-	str = str.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-	str = str.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-
-	str = str.replace(/&ast;&ast;&ast;((?!&ast;).+)&ast;&ast;&ast;/g, '<strong><em>$1</em></strong>');
-	str = str.replace(/&ast;&ast;((?!&ast;).+)&ast;&ast;/g, '<strong>$1</strong>');
-	str = str.replace(/&ast;((?!&ast;).+)&ast;/g, '<em>$1</em>');
-
-	str = str.replace(/__([^_]+)__/g, '<u>$1</u>');
-	str = str.replace(/~~([^~]+)~~/gs, '<s>$1</s>');
-
-	str = str.replace(/######(.+)/g, '<h6>$1</h6>');
-	str = str.replace(/#####(.+)/g, '<h5>$1</h5>');
-	str = str.replace(/####(.+)/g, '<h4>$1</h4>');
-	str = str.replace(/###(.+)/g, '<h3>$1</h3>');
-	str = str.replace(/##(.+)/g, '<h2>$1</h2>');
-	str = str.replace(/#(.+)/g, '<h1>$1</h1>');
-
-	str = str.replace(/[\n\r]--([-]+)[\n\r]/g, '<hr>');
-
-	str = str.replace(/(?:```(.+?)```|&grave;&grave;&grave;(.*?)&grave;&grave;&grave;)/gs, '<pre>$1</pre>');
-	str = str.replace(/(?:`(.+?)`|&grave;(.*?)&grave;)/gs, '<p>$1</p>');
-
-	str = str.replace(/([^"'])((?!["'])https?:\/\/(?:(?:[\w_-][\w_\-.]+)|)(?:(?:[\w.,@?^=%&:/~+#_-]*[\w.,@?^=%&:/~+#_-])|))/g, '$1<a href="$2">$2</a>');
-
 	return str;
 }
 

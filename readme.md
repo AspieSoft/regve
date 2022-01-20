@@ -15,10 +15,10 @@ Running most things in regex allows for a lightweight, fast, and dynamic html te
 
 This view engine avoids throwing errors on undefined values.
 The engine instead, simply hides undefined (or falsy) values.
-This means, you dont get that annoying crash when you simply dont what to show a value,
+This means, you don't get that annoying crash when you simply don't what to show a value,
 instead the engine assumes you want to use the value only if it exists.
 It can handle nested objects without crashing even if the parent (or grandparent) object is undefined.
-This module also auto closes html tags (apart from those that should not close), and removes html comments unless they start with ! or @, or they include copyright, (c), license, or licence.
+This module also auto closes html tags (apart from those that should not close), and removes html comments unless they start with ! or @, or they include copyright, (c), license, or license.
 
 The view engine runs mainly through regex functions, to try and gain improved speed and performance.
 Additionally, regex has the benefit of recognizing patters, which allows for an easy dynamic template engine.
@@ -40,6 +40,10 @@ The if statements support & (and) | (or) operators, as well as the ! (not) opera
 If statements also support < = > and you can check if a var is equal to a 'string'.
 
 There are also some shortened methods for doing common tasks in a simpler way.
+
+## What's New
+
+- Extended Markdown Support
 
 ## Installation
 
@@ -91,8 +95,8 @@ regve({template: 'layout'});
 // if your Not using express, you can still define the the views path and file type in another way
 path = require('path');
 regve({
-    dir: path.join(__dirname, 'views'),
-    type: 'html'
+  dir: path.join(__dirname, 'views'),
+  type: 'html'
 });
 ```
 
@@ -140,26 +144,26 @@ app.set('view engine', 'html');
 <!-- the '!' (not) operator -->
 <!-- this is used instead of an 'unless' function -->
 {{#if !content}}
-    no content
+  no content
 {{else}}
-    {{{content}}}
+  {{{content}}}
 {{/if}}
 
 <!-- if statements also support else if -->
 {{#if title1}}
-    <title>{{title1}}</title>
+  <title>{{title1}}</title>
 {{else title2}}
-    <title>{{title2}}</title>
+  <title>{{title2}}</title>
 {{else}}
-    <title>Default Title</title>
+  <title>Default Title</title>
 {{/if}}
 
 <!-- if statements also support '&' (and) '|' (or) operators -->
 {{#if name & url}}
-    <a {{href="url"}}>{{name}}</a>
+  <a {{href="url"}}>{{name}}</a>
 {{else name | url}}
-    <!-- unset tags are simply removed, and do Not throw an error -->
-    {{name}} {{url}}
+  <!-- unset tags are simply removed, and do Not throw an error -->
+  {{name}} {{url}}
 {{/if}}
 
 <!-- you can also use the '|' operator in vars, similar to how you would in javascript -->
@@ -169,49 +173,49 @@ app.set('view engine', 'html');
 <!-- you can use the '|' operator in first level each statements as well -->
 <!-- note: you must Not include spaces in each statements -->
 {{#each items|itemsDefault as item}}
-    {{item}}
-    <br>
+  {{item}}
+  <br>
 {{/each}}
 
 <!-- the '|' operator is also supported in any custom function (without spaces) -->
 
 <!-- if equal operator -->
 {{#if item = 'item1'}} <!-- if item === string -->
-    this is the first item
+  this is the first item
 {{else item = defaultItem}} <!-- if item === var -->
-    this is {{defaultItem}}
+  this is {{defaultItem}}
 {{else !item}}
-    there is no item
+  there is no item
 {{/if}}
 
 <!-- if not equal operator -->
 {{#if item != 'item1'}} <!-- if item !== string (same with var) -->
-    this is Not the first item
+  this is Not the first item
 {{/if}}
 
 <!-- note: number strings will be converted to numbers when checking equality ('1' = '01' & '1' = '1.0' output: true) -->
 
 <!-- if < (or) > operators -->
 {{#if '1' < '2'}}
-    true
+  true
 {{/if}}
 
 {{#if '1' > '2'}}
-    false
+  false
 {{/if}}
 
 {{#if '1' <= '1'}}
-    true
+  true
 {{/if}}
 {{#if '1' < '1'}}
-    false
+  false
 {{/if}}
 
 {{#if '2' >= '1'}}
-    true
+  true
 {{/if}}
 {{#if '2' > '2'}}
-    false
+  false
 {{/if}}
 
 
@@ -226,53 +230,53 @@ app.set('view engine', 'html');
 <!-- each statements -->
 <!-- in js {list: {userID1: 'username1', userID2: 'user2'}} -->
 {{#each list as item of index}}
-    {{index}} = {{item}}
+  {{index}} = {{item}}
 {{/each}}
 
 <!-- you can also include from object (outputs the name of the object your running on) -->
 {{#each list as item of index from object}}
-    {{object}} <!-- output: list -->
-    {{index}} = {{item}}
+  {{object}} <!-- output: list -->
+  {{index}} = {{item}}
 {{/each}}
 
 <!-- these attrs can be in any order (or undefined), as long as the object your running on is first -->
 {{#each list from object of index as item}}
-    {{object}}:
-    {{index}} = {{item}}
+  {{object}}:
+  {{index}} = {{item}}
 {{/each}}
 
 <!-- each statements with objects -->
 <!-- in js {list: [{id: 'userID1', name: 'username1'}, {id: 'userID2', name: 'user2'}]} -->
 {{#each list as item of index}}
-    {{item.id}} = {{item.name}}
+  {{item.id}} = {{item.name}}
 {{/each}}
 
 <!-- each statements can have if statements inside -->
 {{#each list as item}}
-    {{#if item}}
-        <a href="{{item.url}}">{{item.name}}</a>
-    {{/if}}
+  {{#if item}}
+    <a href="{{item.url}}">{{item.name}}</a>
+  {{/if}}
 {{/each}}
 
 <!-- supports nested each statements -->
 <!-- in js {menus: {main: [{url: '/', name: 'Home'}, {url: '/youtube', name: 'YouTube'}], youtube: [{url: '/youtube/video', name: 'Video'}]}} -->
 {{#each menus as menu of type}}
-    <div {{="type"}}>
-        <!-- pulls reference from "as menu" -->
-        {{#each menu as item}}
-            <a {{href="item.url"}}>{{item.name}}</a>
-        {{/each}}
-    </div>
+  <div {{="type"}}>
+    <!-- pulls reference from "as menu" -->
+    {{#each menu as item}}
+        <a {{href="item.url"}}>{{item.name}}</a>
+    {{/each}}
+  </div>
 {{/each}}
 
 <!-- you can run 2 or more each statements at the same time with the & (and) operator (no spaces) -->
 {{#each list1&list2 as item of index from list}}
-    {{list}}:
-    {{index}} = {{item}}
-    {{#if list = 'list1'}}
-        this is the first list
-    {{/if}}
-    <br>
+  {{list}}:
+  {{index}} = {{item}}
+  {{#if list = 'list1'}}
+    this is the first list
+  {{/if}}
+  <br>
 {{/each}}
 
 
@@ -293,32 +297,32 @@ regve.render('index', {$: {myVar: 'a new var default'});
 
 <!-- disable markdown -->
 {{#no-markdown}}
-    markdown will not run in here
+  markdown will not run in here
 {{/no-markdown}}
 
 <!-- escape html -->
 {{#no-html}}
-    html should not run here
-    Do Not rely on this for html security
-    The purpose of this, is so an admin can display html without running it
+  html should not run here
+  Do Not rely on this for html security
+  The purpose of this, is so an admin can display html without running it
 {{/no-html}}
 
 <!-- delete -->
 {{#delete}}
-    This text will be removed before rendering
-    Do Not rely on this for security
-    The purpose of this, is for the engine to remove the right content from if else statements in bulk
+  This text will be removed before rendering
+  Do Not rely on this for security
+  The purpose of this, is for the engine to remove the right content from if else statements in bulk
 {{/delete}}
 
 
 <!-- basic markdown support -->
 <!-- note: markdown is not escaped in objects, but it is limited so your users can use it in comments -->
-#h1
-##h2
-###h3
-####h4
-#####h5
-######h6
+# h1
+## h2
+### h3
+#### h4
+##### h5
+###### h6
 
 --- = <hr>
 
@@ -387,25 +391,25 @@ app.engine('html', regve({cache: '2m', cacheDev: true})); // 2 minutes (also run
 // data will be returned as a buffer, so you may need to use data.toString() to modify it
 
 regve({onBeforeRender: function(data){
-    // this will run before res.render() runs
-    return data;
+  // this will run before res.render() runs
+  return data;
 }});
 
 regve({onAfterRender: function(data){
-    // this will run after res.render() runs
-    return data;
+  // this will run after res.render() runs
+  return data;
 }});
 
 // you can also run these functions by setting options
 
 res.render('index', {onBeforeRender: function(data){
-    // this will run before res.render() runs
-    return data;
+  // this will run before res.render() runs
+  return data;
 }});
 
 res.render('index', {onAfterRender: function(data){
-    // this will run after res.render() runs
-    return data;
+  // this will run after res.render() runs
+  return data;
 }});
 ```
 
@@ -415,9 +419,9 @@ res.render('index', {onAfterRender: function(data){
 // to increase performance, you can globally skip some of the unused parts of the view engine
 // you can also add these to res.render({/* options */});
 app.engine('regve', regve({
-    noImports: true,
-    noEach: true,
-    noMarkdown: true
+  noImports: true,
+  noEach: true,
+  noMarkdown: true
 }));
 
 // by default, the view engine will remove any unused vars
@@ -430,19 +434,19 @@ app.engine('html', regve({keepInvalidVars: true}));
 ```js
 let hasContent = true || false; // default = false
 regve.addFunction('name', function(attrs, content, options){
-    // attrs is an array of items added after the tag name, separated by spaces
-    // example: {{#name attr1 attr2 attr3}}
+  // attrs is an array of items added after the tag name, separated by spaces
+  // example: {{#name attr1 attr2 attr3}}
 
-    // content only exists if hasContent is true
-    // if hasContent is true, than you will need to close the tag with {{/name}}
-    // example: {{#name attrs}} content {{/name}}
+  // content only exists if hasContent is true
+  // if hasContent is true, than you will need to close the tag with {{/name}}
+  // example: {{#name attrs}} content {{/name}}
 
-    // options are the vars you set when adding the template
-    // example: res.render('index', {/* options */});
+  // options are the vars you set when adding the template
+  // example: res.render('index', {/* options */});
 
-    // when your done, you need to return the new content
-    // if you return nothing, the content is simply removed
-    return content;
+  // when your done, you need to return the new content
+  // if you return nothing, the content is simply removed
+  return content;
 }, hasContent);
 ```
 
@@ -480,29 +484,29 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'html');
 
 app.post(function(req, res){
-    // compatible with nonce script key (set with {{nonce}}) (even if random per click, will send original key in ajax call)
-    // the nonce key (if set) is pulled from its own script tag to a temp 'let' variable when running an ajax call, to preserve the way google hides the key in console 'elements' on a script tag
-    res.render('index', {lazyLoad: {tag: 'body', method: 'post', data: req.body.lazyLoadData}});
+  // compatible with nonce script key (set with {{nonce}}) (even if random per click, will send original key in ajax call)
+  // the nonce key (if set) is pulled from its own script tag to a temp 'let' variable when running an ajax call, to preserve the way google hides the key in console 'elements' on a script tag
+  res.render('index', {lazyLoad: {tag: 'body', method: 'post', data: req.body.lazyLoadData}});
 });
 
 app.get(function(req, res){
-    // method 'post' will use app.post when sending ajax request to server for next piece of the page
-    // method 'get' is optional
-    res.render('index', {lazyLoad: {tag: 'body', method: 'post'}});
+  // method 'post' will use app.post when sending ajax request to server for next piece of the page
+  // method 'get' is optional
+  res.render('index', {lazyLoad: {tag: 'body', method: 'post'}});
 });
 
 app.get(function(req, res){
-    // you can also set the 'lazyLoad.scrollElm' option and append to a different tag than you scrolled to
-    // this is useful if you want to have a footer scroll with the content, and stay at the bottom when new content is added
-    // 'scrollElm' can be a class, id, or tag name
-    res.render('index', {lazyLoad: {tag: 'main', scrollElm: 'body'}});
+  // you can also set the 'lazyLoad.scrollElm' option and append to a different tag than you scrolled to
+  // this is useful if you want to have a footer scroll with the content, and stay at the bottom when new content is added
+  // 'scrollElm' can be a class, id, or tag name
+  res.render('index', {lazyLoad: {tag: 'main', scrollElm: 'body'}});
 });
 
 app.get(function(req, res){
-    // by default, the lazyLoad option will run before any variables are added or functions are run, allowing unused parts of the lazy loaded template to be removed before rendering
-    // you can disable this if needed, by setting the 'afterVars' option to true
-    // setting this can be useful if you have a variable that adds the {{#lazyload}} tag dynamically
-    res.render('index', {lazyLoad: {afterVars: true}});
+  // by default, the lazyLoad option will run before any variables are added or functions are run, allowing unused parts of the lazy loaded template to be removed before rendering
+  // you can disable this if needed, by setting the 'afterVars' option to true
+  // setting this can be useful if you have a variable that adds the {{#lazyload}} tag dynamically
+  res.render('index', {lazyLoad: {afterVars: true}});
 });
 
 // if you only have specific vars that need to load early, you can set the 'earlyVars' option
@@ -520,32 +524,32 @@ res.render('index', {lazyLoad: {earlyVars: ['myContent', 'myScripts', 'myStyles.
 <!-- if jQuery is not defined, XMLHttpRequest method will be used as a fallback -->
 
 <body>
-    <header>The Header</header>
-    <main>
-        <h2>Hello, World!</h2>
-        <br>
-        <div style="height: 120vh;">
-            lazy load 1
-        </div>
-    {{#lazyload}}
-        <div style="height: 120vh;">
-            lazy load 2
-        </div>
-    {{#lazyload}}
-        <div style="height: 120vh;">
-            lazy load 3
-        </div>
-    {{#lazyload}}
-        <div style="height: 120vh;">
-            lazy load 4
-        </div>
-    {{#lazyload}}
-        <div style="height: 120vh;">
-            lazy load 5
-        </div>
-    ####No More Info To LazyLoad
-    </main>
-    <footer>The Footer</footer>
+  <header>The Header</header>
+  <main>
+    <h2>Hello, World!</h2>
+    <br>
+    <div style="height: 120vh;">
+      lazy load 1
+    </div>
+  {{#lazyload}}
+    <div style="height: 120vh;">
+      lazy load 2
+    </div>
+  {{#lazyload}}
+    <div style="height: 120vh;">
+      lazy load 3
+    </div>
+  {{#lazyload}}
+    <div style="height: 120vh;">
+      lazy load 4
+    </div>
+  {{#lazyload}}
+    <div style="height: 120vh;">
+      lazy load 5
+    </div>
+  ####No More Info To LazyLoad
+  </main>
+  <footer>The Footer</footer>
 </body>
 ```
 
@@ -555,8 +559,8 @@ res.render('index', {lazyLoad: {earlyVars: ['myContent', 'myScripts', 'myStyles.
 // client side javascript, there is a custom event listener you can use
 // this event listener is triggered every time a new page (new content) is lazy loaded
 document.addEventListener('onPageLazyLoad', function(e){
-    // getPage() returns the numbered section loaded, based on separation between {{#lazyload}} tag occurrences
-    console.log('page', e.detail.getPage());
+  // getPage() returns the numbered section loaded, based on separation between {{#lazyload}} tag occurrences
+  console.log('page', e.detail.getPage());
 });
 ```
 
