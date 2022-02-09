@@ -3,7 +3,13 @@ function runTest(regve){
 	const http = require('http');
 	const fs = require('fs');
 
-	regve({dir: __dirname, template: 'template', extract: ['style'], keepInvalidVars: false});
+	regve({
+    dir: __dirname,
+    template: 'template',
+    extract: ['style'],
+    keepInvalidVars: false,
+    opts: {static: '/cdn'},
+  });
 
 	function onRequest(req, res){
 		if(req.url !== '/'){

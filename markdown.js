@@ -239,6 +239,13 @@ function compileMarkdown(data){
 
     // ordered list
     str = str.replace(/^([\t ]*)([0-9]+\.)([\t ]*)(.*)$((?:[\r\n]+\1.*$)*)/gm, function(_, sp1, n, sp2, cont, more){
+      let extra = '';
+      more.trim().replace(/^[\r\n]*$((?:[\r\n]|.)*)/m, (str) => {
+        extra = str;
+        return '';
+      });
+      more = more.replace(new RegExp(`${escapeRegex(extra)}[\r\n\t\s ]*$`), '');
+      
       let lines = more.split(new RegExp(`[\r\n]+${sp1}`, 'g'));
       lines[0] = n + sp2 + cont;
 
@@ -285,12 +292,20 @@ function compileMarkdown(data){
         <ol${dir}>
           ${items}
         </ol>
+        ${compileLists(extra)}
       `;
     });
 
 
     // unordered list
     str = str.replace(/^([\t ]*)([-*+])([\t ]*)(.*)$((?:[\r\n]+\1.*$)*)/gm, function(_, sp1, n, sp2, cont, more){
+      let extra = '';
+      more.trim().replace(/^[\r\n]*$((?:[\r\n]|.)*)/m, (str) => {
+        extra = str;
+        return '';
+      });
+      more = more.replace(new RegExp(`${escapeRegex(extra)}[\r\n\t\s ]*$`), '');
+
       let lines = more.split(new RegExp(`[\r\n]+${sp1}`, 'g'));
       lines[0] = n + sp2 + cont;
 
@@ -321,6 +336,7 @@ function compileMarkdown(data){
         <ul>
           ${items}
         </ul>
+        ${compileLists(extra)}
       `;
     });
 

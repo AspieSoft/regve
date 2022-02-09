@@ -63,7 +63,10 @@ const regve = require('@aspiesoft/regve');
 
 const app = express();
 
-app.engine('html', regve({/* global options */}));
+app.engine('html', regve({
+  /* global options */
+  opts: {default: 'some default options for res.render'}
+}));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'html');
 

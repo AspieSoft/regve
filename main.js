@@ -220,6 +220,12 @@ function render(str, options){
 
 	if(mainOptions && mainOptions.raw){return str;}
 
+
+  if(mainOptions.options || mainOptions.opts){
+    options = {...(mainOptions.options || mainOptions.opts), mainOptions, ...options};
+  }
+
+
 	if(!str.startsWith('\n')){str = '\n\r'+str;}
 	if(!str.endsWith('\n')){str += '\n\r';}
 	str = autoCloseTags(str);
