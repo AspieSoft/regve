@@ -124,6 +124,178 @@ const tagFunctions = {
 				if(result && !init){return runAllTags(autoCloseTags(result), options);}
 				if(result){return autoCloseTags(result);}
 			}
+		}},
+  'module': {hasContent: true, func: function(attrs, content, options, init = false){
+			if((mainOptions && mainOptions.noImports) || options.noImports){return;}
+			if(attrs && attrs[0]){
+				let fileType = viewsType || mainOptions.type || mainOptions.extension || 'html';
+				if(fileType.startsWith('.')){fileType = fileType.replace('.', '');}
+				let filePath = path.join(viewsPath || mainOptions.dir || mainOptions.path || __dirname, attrs[0]+'.'+fileType);
+				if(!filePath.startsWith(path.join(viewsPath || mainOptions.dir || mainOptions.path || __dirname))){return null;}
+				let result = getFileCache(filePath);
+				if(!result){
+					if(fs.existsSync(filePath)){try{result = fs.readFileSync(filePath);}catch(e){result = undefined;}}
+					setFileCache(filePath, result, options);
+				}
+
+        let opts = {...options}
+
+        let key = null;
+        let optObj = opts;
+        let optKey = [];
+
+        for(let i = 1; i < attrs.length; i++){
+          if(attrs[i].endsWith(':')){
+            let k = attrs[i].replace(/:$/, '');
+            if(k && k !== ''){
+              key = k.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+            }
+          }else if(attrs[i].endsWith('[')){
+            let k = attrs[i].replace(/\[$/, '');
+            if(!optObj[k] || typeof optObj[k] !== 'object'){
+              optObj[k] = {};
+            }
+            optObj = optObj[k];
+            optKey.push(k);
+          }else if(attrs[i].endsWith(']')){
+            let opt = attrs[i].replace(/\]$/, '');
+            if(opt && opt.trim() !== ''){
+              if(opt.match(/^[\w_\-\.]+:/)){
+                let o = opt.replace(/^[\w_\-\.]+:/, '');
+                let k = opt.replace(/^([\w_\-\.]+):.*$/, '$1');
+    
+                if(key){
+                  optObj[key][k] = o.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+                  key = null;
+                }else{
+                  optObj[k] = o.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+                }
+              }else if(key){
+                optObj[key] = opt.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+                key = null;
+              }else if(Array.isArray(optObj)){
+                optObj.push(opt.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2'));
+              }else{
+                optObj[opt.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2')] = true;
+              }
+            }
+
+            optKey.pop();
+            optObj = opts;
+            for(let i = 0; i < optKey.length; i++){
+              optObj = optObj[optKey[i]];
+            }
+          }else if(attrs[i].match(/^[\w_\-\.]+:/)){
+            let o = attrs[i].replace(/^[\w_\-\.]+:/, '');
+            let k = attrs[i].replace(/^([\w_\-\.]+):.*$/, '$1');
+
+            if(key){
+              optObj[key][k] = o.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+              key = null;
+            }else{
+              optObj[k] = o.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+            }
+          }else if(key){
+            optObj[key] = attrs[i].replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+            key = null;
+          }else if(Array.isArray(optObj)){
+            optObj.push(attrs[i].replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2'));
+          }else{
+            optObj[attrs[i].replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2')] = true;
+          }
+        }
+
+        if(content && content.trim() !== ''){
+          opts.body = content;
+        }else{
+          opts.body = undefined;
+        }
+
+				if(result){return runAllTags(autoCloseTags(result), opts);}
+			}
+		}},
+  'insert': {hasContent: false, func: function(attrs, content, options, init = false){
+			if((mainOptions && mainOptions.noImports) || options.noImports){return;}
+			if(attrs && attrs[0]){
+				let fileType = viewsType || mainOptions.type || mainOptions.extension || 'html';
+				if(fileType.startsWith('.')){fileType = fileType.replace('.', '');}
+				let filePath = path.join(viewsPath || mainOptions.dir || mainOptions.path || __dirname, attrs[0]+'.'+fileType);
+				if(!filePath.startsWith(path.join(viewsPath || mainOptions.dir || mainOptions.path || __dirname))){return null;}
+				let result = getFileCache(filePath);
+				if(!result){
+					if(fs.existsSync(filePath)){try{result = fs.readFileSync(filePath);}catch(e){result = undefined;}}
+					setFileCache(filePath, result, options);
+				}
+
+        let opts = {...options}
+
+        let key = null;
+        let optObj = opts;
+        let optKey = [];
+
+        for(let i = 1; i < attrs.length; i++){
+          if(attrs[i].endsWith(':')){
+            let k = attrs[i].replace(/:$/, '');
+            if(k && k !== ''){
+              key = k.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+            }
+          }else if(attrs[i].endsWith('[')){
+            let k = attrs[i].replace(/\[$/, '');
+            if(!optObj[k] || typeof optObj[k] !== 'object'){
+              optObj[k] = {};
+            }
+            optObj = optObj[k];
+            optKey.push(k);
+          }else if(attrs[i].endsWith(']')){
+            let opt = attrs[i].replace(/\]$/, '');
+            if(opt && opt.trim() !== ''){
+              if(opt.match(/^[\w_\-\.]+:/)){
+                let o = opt.replace(/^[\w_\-\.]+:/, '');
+                let k = opt.replace(/^([\w_\-\.]+):.*$/, '$1');
+    
+                if(key){
+                  optObj[key][k] = o.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+                  key = null;
+                }else{
+                  optObj[k] = o.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+                }
+              }else if(key){
+                optObj[key] = opt.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+                key = null;
+              }else if(Array.isArray(optObj)){
+                optObj.push(opt.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2'));
+              }else{
+                optObj[opt.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2')] = true;
+              }
+            }
+
+            optKey.pop();
+            optObj = opts;
+            for(let i = 0; i < optKey.length; i++){
+              optObj = optObj[optKey[i]];
+            }
+          }else if(attrs[i].match(/^[\w_\-\.]+:/)){
+            let o = attrs[i].replace(/^[\w_\-\.]+:/, '');
+            let k = attrs[i].replace(/^([\w_\-\.]+):.*$/, '$1');
+
+            if(key){
+              optObj[key][k] = o.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+              key = null;
+            }else{
+              optObj[k] = o.replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+            }
+          }else if(key){
+            optObj[key] = attrs[i].replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2');
+            key = null;
+          }else if(Array.isArray(optObj)){
+            optObj.push(attrs[i].replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2'));
+          }else{
+            optObj[attrs[i].replace(/^(["'])(\\[\\"']|.*?)\1$/, '$2')] = true;
+          }
+        }
+
+				if(result){return runAllTags(autoCloseTags(result), opts);}
+			}
 		}}
 };
 
@@ -439,7 +611,25 @@ function runContainerTagFunctions(str, options){
 			}
 		}else if(type === '/' && tag === tagData.func && tagIndex === tagData.index && tagData.level <= 1){
 			if(typeof tagFunctions[tag].func === 'function'){
-				let attrs = tagData.attrs.split(' ').map(attr => attr.trim()).filter(filterExists);
+				let attrList = tagData.attrs.split(' ');
+
+        let attrs = [];
+        let attrStr = null;
+        for(let i = 0; i < attrList.length; i++){
+          if(!attrStr && (attrList[i].startsWith('"') || attrList[i].startsWith('\''))){
+            attrStr = attrList[i];
+          }else if(attrStr && (attrList[i].endsWith('"') || attrList[i].endsWith('\'')) && !(attrList[i].endsWith('\\"') || attrList[i].endsWith('\\\''))){
+            attrStr += ' ' + attrList[i];
+            attrs.push(attrStr);
+            attrStr = null;
+          }else if(attrStr){
+            attrStr += ' ' + attrList[i];
+          }else{
+            attrs.push(attrList[i]);
+          }
+        }
+        
+        attrs = attrs.map(attr => attr.trim()).filter(filterExists);
 				if(tagData.attrTypes){
 					let newAttrs = {};
 					forEach(tagData.attrTypes, attrType => {
@@ -494,8 +684,27 @@ function runBasicTagFunctions(str, options){
 		if(type === '$' && attrs.startsWith('=')){
 			opts['$'][tag] = getObj(opts, attrs) || undefined;
 		}else if(type === '#' && tagFunctions[tag] && !tagFunctions[tag].hasContent && typeof tagFunctions[tag].func === 'function'){
-			attrs = attrs.split(' ').map(attr => attr.trim()).filter(filterExists);
-			if(tagFunctions[tag].attrs){
+      let attrList = attrs.split(' ');
+
+      attrs = [];
+      let attrStr = null;
+      for(let i = 0; i < attrList.length; i++){
+        if(!attrStr && (attrList[i].startsWith('"') || attrList[i].startsWith('\''))){
+          attrStr = attrList[i];
+        }else if(attrStr && (attrList[i].endsWith('"') || attrList[i].endsWith('\'')) && !(attrList[i].endsWith('\\"') || attrList[i].endsWith('\\\''))){
+          attrStr += ' ' + attrList[i];
+          attrs.push(attrStr);
+          attrStr = null;
+        }else if(attrStr){
+          attrStr += ' ' + attrList[i];
+        }else{
+          attrs.push(attrList[i]);
+        }
+      }
+      
+      attrs = attrs.map(attr => attr.trim()).filter(filterExists);
+			
+      if(tagFunctions[tag].attrs){
 				let newAttrs = {};
 				forEach(tagFunctions[tag].attrs, attrType => {
 					let index = attrs.indexOf(attrType);

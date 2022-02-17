@@ -46,6 +46,7 @@ There are also some shortened methods for doing common tasks in a simpler way.
 ## What's New
 
 - Extended Markdown Support
+- Added Components
 
 ## Installation
 
@@ -126,7 +127,6 @@ app.set('view engine', 'html');
 <!-- add html -->
 <!-- {{{3}}} allows html and {{2}} escapes html -->
 {{{content}}}
-
 
 <!-- set attributes if the value exists -->
 <script src="/script.js" {{nonce=nonce_key}}></script>
@@ -298,6 +298,16 @@ regve.render('index', {$: {myVar: 'a new var default'});
 <!-- import another view -->
 <!-- must be {{{3}}} to allow html -->
 {{{#import header}}}
+{{{#import page/header}}}
+{{{#import some/file/path}}}
+
+
+<!-- components work a lot like imports -->
+{{{#module components/header var1:a var2: b str: "A String with spaces \"and\" escaped quotes" obj[ key:value item1: a item2: b item3: c ] }}}
+  This module has content
+{{{/module}}}
+
+{{{#insert components/header desc: "a simple module without a body" body: "I can also define the body with a var if I want" test 'this \'test\' string uses single quotes'}}}
 
 
 <!-- disable markdown -->

@@ -1,5 +1,15 @@
 {{#import header}}
 
+
+{{#module box class: class1 name: a skipFooter page[ a: 1 b: 2 c:3 test ] list1[ a b c:3 ] key: 'value with space\'s and string'}}
+  this is the body of an imported box
+{{/module}}
+
+
+{{#insert box class: class1 name: a skipFooter page[ a: 1 b: 2 c:3 test ] list1[ a b c:3 ] body: "this is the body from an inserted string"}}
+
+<br>
+
 <link rel="stylesheet" href="{{static}}/style.css">
 
 <title>{{title}}</title>
