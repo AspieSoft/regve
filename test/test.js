@@ -23,7 +23,10 @@ function runTest(regve){
 				res.writeHead(404, {'Content-Type': 'text/html'});
 				res.write('404');
 			}else{
-				content = regve.render(content, {list1: ['item 1', 'item 2', 'item 3'], list2: ['item 4', 'item 5', 'item 6'], title: 'test', menus: {main: [{url: '/', name: 'Home'}, {url: '/youtube', name: 'YouTube'}], sub: [{url: '/video', name: 'Video'}]}});
+				content = regve.render(content, {
+          script: '<script>console.log("test")</script>',
+          list1: ['item 1', 'item 2', 'item 3'], list2: ['item 4', 'item 5', 'item 6'], title: 'test', menus: {main: [{url: '/', name: 'Home'}, {url: '/youtube', name: 'YouTube'}], sub: [{url: '/video', name: 'Video'}]}
+        });
 				res.write(content);
 			}
 			res.end();

@@ -6,8 +6,10 @@ miniforge.build('./main.js', {outputNameMin: true});
 
 console.log('Finished Build');
 
-const app = require('./index');
-const test = require('./test/test');
-test(app);
+try {
+  const app = require('./index');
+  const test = require('./test/test');
+  test(app);
+} catch(e) {}
 
 setTimeout(function(){process.exit(0);}, 5000);

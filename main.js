@@ -1232,7 +1232,9 @@ function extractTags(str, tags, autoCloseTags = true){
 function autoCloseTags(str){
 	if(!str && str !== 0 && str !== false){return null;}
 
-	str = escapeInvalidTags(str);
+  str = str.toString();
+
+	// str = escapeInvalidTags(str);
 
 	if(!singleTagsList || singleTagsList.length < 1){return str.toString();}
 
