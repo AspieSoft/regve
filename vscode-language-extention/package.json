@@ -1,0 +1,39 @@
+{
+  "name": "regve",
+  "displayName": "Regve",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.65.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "regve",
+        "aliases": [
+          "Regve",
+          "regve"
+        ],
+        "extensions": [
+          ".regve"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "regve",
+        "scopeName": "text.html.regve",
+        "path": "./syntaxes/regve.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.javascript": "javascript",
+          "meta.embedded.block.css": "css",
+          "meta.embedded.block.html": "html"
+        }
+      }
+    ]
+  }
+}

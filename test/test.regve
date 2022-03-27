@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  {{-style}}
+  {{{script}}}
+</head>
+<body>
+
+  <div class="{{className}}" {{attr="attr1"}} {{="attr"}}>
+    test
+  </div>
+
+  {{{body}}}
+
+  // line comment
+
+  test
+
+  <!-- HTML block comment -->
+
+  test
+
+  /* block comment */
+
+  {{#if test}}
+    [md](/markdown)
+  {{/if}}
+
+  {{#no-html}}
+    <html>
+      Escaped HTML
+    </html>
+  {{/no-html}}
+
+  {{#no-markdown}}
+    # Escaped Markdown
+  {{/no-markdown}}
+
+  {{$var = 'string'}}
+
+  {{#if bool & str = 'string' | num < '2'}}
+
+  {{/if}}
+
+  {{#if test || warnDoubleOr}}
+    
+  {{/if}}
+
+</body>
+</html>

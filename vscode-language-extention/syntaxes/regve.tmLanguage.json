@@ -1,0 +1,366 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Regve",
+	"patterns": [
+    {"include": "#all"}
+	],
+	"repository": {
+
+    "all": {
+      "patterns": [
+        {"include": "#comments"},
+        {"include": "#htmlScript"},
+        {"include": "#htmlStyle"},
+        {"include": "#strings"},
+        {"include": "#tags"},
+        {"include": "#htmlForm"},
+        {"include": "#html"},
+        {"include": "#markdown"}
+      ]
+    },
+
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.regve",
+          "begin": "<!--",
+          "end": "-->"
+        },
+        {
+          "name": "comment.block.regve",
+          "begin": "/\\*",
+          "end": "\\*/"
+        },
+        {
+          "name": "comment.line.double-slash.regve",
+          "match": "//.*"
+        }
+      ]
+    },
+
+		"strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.regve",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.regve",
+              "match": "\\\\."
+            },
+            {"include": "#tags"}
+          ]
+        },
+        {
+          "name": "string.quoted.single.regve",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.regve",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+		},
+
+    "tags": {
+      "patterns": [
+        {
+          "name": "keyword.control.regve",
+          "begin": "{{{([#\\-$/][\\w_\\-.]+|)",
+          "end": "}}}",
+          "beginCaptures": {
+            "1": {
+              "name": "entity.name.tag.regve"
+            }
+          },
+          "patterns": [
+            {"include": "#regve"}
+          ]
+        },
+        {
+          "name": "constant.character.regve",
+          "begin": "{{([#\\-$/][\\w_\\-.]+|)",
+          "end": "}}",
+          "beginCaptures": {
+            "1": {
+              "name": "entity.name.tag.regve"
+            }
+          },
+          "patterns": [
+            {"include": "#regve"}
+          ]
+        }
+      ]
+    },
+
+    "html": {
+      "patterns": [
+        {
+          "name": "entity.name.tag.regve",
+          "begin": "</?([\\w_\\-!.]*)",
+          "end": "/?>",
+          "patterns": [
+            {"include": "#all"},
+            {
+              "name": "keyword.operator.regve",
+              "match": "="
+            },
+            {
+              "name": "variable.parameter.regve",
+              "match": "."
+            }
+          ]
+        }
+      ]
+    },
+
+    "htmlScript": {
+      "name": "entity.name.tag.regve",
+      "begin": "<script((?:\"(?:\\\\[\\\\\"]|.)*?\"|.)*?)>",
+      "end": "</script>",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {"include": "#all"},
+            {
+              "name": "keyword.operator.regve",
+              "match": "="
+            },
+            {
+              "name": "variable.parameter.regve",
+              "match": "."
+            }
+          ]
+        }
+      },
+      "patterns": [
+        {
+          "include": "source.js"
+        },
+        {
+
+          "name": "keyword.letter.js.regve",
+          "match": "."
+        }
+      ]
+    },
+
+    "htmlStyle": {
+      "name": "entity.name.tag.regve",
+      "begin": "<style((?:\"(?:\\\\[\\\\\"]|.)*?\"|.)*?)>",
+      "end": "</style>",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {"include": "#all"},
+            {
+              "name": "keyword.operator.regve",
+              "match": "="
+            },
+            {
+              "name": "variable.parameter.regve",
+              "match": "."
+            }
+          ]
+        }
+      },
+      "patterns": [
+        {
+          "include": "source.css"
+        },
+        {
+
+          "name": "keyword.letter.css.regve",
+          "match": "."
+        }
+      ]
+    },
+
+    "regve": {
+      "patterns": [
+        {
+          "name": "variable.name.regve",
+          "begin": "=(\")",
+          "end": "\"",
+          "beginCaptures": {
+            "0": {
+              "name": "keyword.operator.regve"
+            },
+            "1": {
+              "name": "string.quoted.double.regve"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "string.quoted.double.regve"
+            }
+          }
+        },
+        {"include": "#strings"},
+        {
+          "name": "keyword.operator.regve",
+          "match": "[+\\-*/=^&|<>]"
+        },
+                {
+          "name": "variable.name",
+          "match": "."
+        }
+      ]
+    },
+
+    "htmlForm": {
+      "name": "entity.name.tag.regve",
+      "begin": "<form((?:\"(?:\\\\[\\\\\"]|.)*?\"|.)*?)>",
+      "end": "</form>",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {"include": "#all"},
+            {
+              "name": "keyword.operator.regve",
+              "match": "="
+            },
+            {
+              "name": "variable.parameter.regve",
+              "match": "."
+            }
+          ]
+        }
+      },
+      "patterns": [
+        {
+          "name": "variable.language",
+          "begin": "\\[",
+          "end": "\\]",
+          "patterns": [
+            {
+              "name": "keyword.letter.form.regve",
+              "match": "."
+            }
+          ]
+        },
+        {
+          "name": "keyword.letter.form.regve",
+          "match": "."
+        }
+      ]
+    },
+
+    "markdown": {
+      "patterns": [
+        {
+          "name": "variable.name.md.js.regve",
+          "begin": "```js",
+          "end": "```",
+          "patterns": [
+            {"include": "source.js"},
+            {
+              "name": "keyword.letter.md.js.regve",
+              "match": "."
+            }
+          ]
+        },
+        {
+          "name": "variable.name.md.css.regve",
+          "begin": "```css",
+          "end": "```",
+          "patterns": [
+            {"include": "source.css"},
+            {
+              "name": "keyword.letter.md.css.regve",
+              "match": "."
+            }
+          ]
+        },
+        {
+          "name": "variable.name.md.css.regve",
+          "begin": "```html",
+          "end": "```",
+          "patterns": [
+            {"include": "text.html.basic"},
+            {
+              "name": "keyword.letter.md.html.regve",
+              "match": "."
+            }
+          ]
+        },
+        {
+          "name": "variable.name.md.css.regve",
+          "begin": "```[\\w_\\-.]+*",
+          "end": "```",
+          "patterns": [
+            {
+              "name": "keyword.letter.md.html.regve",
+              "match": "."
+            }
+          ]
+        },
+        {
+          "name": "variable.language.md.regve",
+          "match": "(\\*{1,3})[^*]+\\1"
+        },
+        {
+          "name": "variable.language.md.regve",
+          "match": "([_~]{2}).+\\1"
+        },
+        {
+          "name": "markup.inline.raw.md.regve",
+          "match": "(`)[^`]+`"
+        },
+        {
+          "name": "variable.parameter.md.regve",
+          "match": "!?\\[(.*?)\\]\\((.*?)\\)\\{(.*?)\\}",
+          "captures": {
+            "1": {
+              "name": "string.unquoted.md.regve"
+            },
+            "2": {
+              "name": "markup.underline.link"
+            },
+            "3": {
+              "patterns": [
+                {
+                  "begin": "style=(\")",
+                  "end": "\"",
+                  "beginCaptures": {
+                    "1": {
+                      "name": "string.quoted.double.regve"
+                    }
+                  },
+                  "endCaptures": {
+                    "0": {
+                      "name": "string.quoted.double.regve"
+                    }
+                  },
+                  "patterns": [
+                    {"include": "source.css#property-keywords"},
+                    {"include": "source.css#property-names"},
+                    {"include": "source.css#property-values"},
+                    {
+                      "name": "keyword.control.css.regve",
+                      "match": ";"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "keyword.control.md.regve",
+          "match": "#{1,6}.*"
+        },
+        {
+          "name": "keyword.letter.md.regve",
+          "match": "."
+        }
+      ]
+    }
+
+	},
+	"scopeName": "text.html.regve"
+}
