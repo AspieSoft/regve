@@ -1,8 +1,16 @@
 {
   "name": "regve",
   "displayName": "Regve",
-  "description": "",
-  "version": "0.0.1",
+  "description": "A fast and dynamic view engine similar to handlebars.",
+  "version": "1.0.0",
+  "publisher": "AspieSoft",
+  "author": "AspieSoft",
+  "license": "MIT",
+  "icon": "icon-128x128.png",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/aspiesoft/regve.git"
+	},
   "engines": {
     "vscode": "^1.65.0"
   },
