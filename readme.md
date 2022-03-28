@@ -43,6 +43,8 @@ If statements also support < = > and you can check if a var is equal to a 'strin
 
 There are also some shortened methods for doing common tasks in a simpler way.
 
+[VSCode Extention For .regve Syntax Highlighting](https://marketplace.visualstudio.com/items?itemName=AspieSoft.regve)
+
 ## What's New
 
 - Extended Markdown Support
